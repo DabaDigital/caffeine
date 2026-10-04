@@ -1,0 +1,363 @@
+/* Guest reviews on the espresso background. Contrast on --rv-paper:
+   muted 7.8:1, accent 10:1; on cards (--rv-card) muted 6.8:1. */
+.reviews {
+  --rv-ink: var(--milk);
+  --rv-muted: var(--muted);
+  --rv-accent: var(--pistachio);
+  --rv-card: #342922;
+  --rv-line: #f5eddf1f;
+  --rv-line-strong: #f5eddf3d;
+  --rv-header: 78px;
+  --pager-ink: var(--rv-muted);
+  --pager-line: var(--rv-line-strong);
+  --pager-active: var(--rv-accent);
+  --pager-active-ink: var(--coffee);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 44px;
+  max-width: 1420px;
+  margin: auto;
+  padding: 80px 24px 88px;
+  color: var(--rv-ink);
+}
+/* Long reviews must not widen the grid beyond the screen. */
+.aside,
+.main {
+  min-width: 0;
+}
+.title {
+  margin-top: 22px;
+}
+.title em {
+  color: var(--rv-accent);
+}
+.intro {
+  margin-top: 22px;
+  max-width: 34ch;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--rv-muted);
+}
+
+.summary {
+  margin-top: 34px;
+  padding: 26px 24px 24px;
+  border: 1px solid var(--rv-line);
+  border-radius: 26px;
+  background: linear-gradient(180deg, #f5eddf0e, #f5eddf04);
+  box-shadow: inset 0 1px 0 #f5eddf14;
+}
+.score {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.score strong {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 84px;
+  font-weight: 400;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: var(--rv-accent);
+}
+.scoreMeta {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--rv-muted);
+}
+.breakdown {
+  display: grid;
+  gap: 9px;
+  margin: 22px 0 0;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--rv-line);
+  list-style: none;
+}
+.breakdown li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--rv-muted);
+}
+.breakdownLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--rv-ink);
+}
+.breakdownLabel svg {
+  fill: currentColor;
+}
+.bar {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f5eddf1a;
+}
+.bar > span {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--rv-accent);
+  transform: scaleX(var(--share));
+  transform-origin: left center;
+}
+.breakdownCount {
+  text-align: right;
+}
+.mapLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 44px;
+  margin-top: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rv-ink);
+}
+.arrow {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f5eddf17;
+  transition: transform 260ms var(--ease-out);
+}
+
+.featured {
+  position: relative;
+  margin: 0;
+  padding-top: 52px;
+}
+.quoteMark {
+  position: absolute;
+  top: -26px;
+  left: -8px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 180px;
+  line-height: 1;
+  color: var(--rv-accent);
+}
+.featured blockquote {
+  margin: 0;
+}
+.featured blockquote p {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(30px, 3.6vw, 50px);
+  font-style: italic;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+}
+.featured figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 26px;
+  font-size: 12px;
+  color: var(--rv-muted);
+}
+.featured figcaption strong {
+  font-weight: 600;
+  color: var(--rv-ink);
+}
+
+/* Four reviews to a page: stacked on phones, a masonry wall when wider. */
+.wallRegion {
+  margin-top: 44px;
+}
+.wall {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wall[hidden] {
+  display: none;
+}
+.pager {
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+.card figure {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 24px 22px 20px;
+  border: 1px solid var(--rv-line);
+  border-radius: 22px;
+  background: var(--rv-card);
+}
+.card blockquote {
+  margin: 0;
+}
+.card blockquote p {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 19px;
+  line-height: 1.32;
+}
+.author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rv-line);
+  font-size: 12px;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #c6d4a41f;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--rv-accent);
+}
+.author strong {
+  display: block;
+  font-weight: 600;
+}
+.author strong + span {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rv-muted);
+}
+
+.stars {
+  position: relative;
+  display: inline-flex;
+  line-height: 0;
+  color: var(--rv-accent);
+}
+.starRow {
+  display: inline-flex;
+  gap: 3px;
+}
+.starRow:first-child {
+  opacity: 0.4;
+}
+.starFill {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 calc(100% - var(--rating) * 100%) 0 0);
+}
+.starFill svg {
+  fill: currentColor;
+}
+.cardRating {
+  line-height: 0;
+}
+
+.invite {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(30px, 4.5vw, 64px);
+  border-radius: 30px;
+  background: var(--milk);
+  color: var(--coffee);
+}
+.inviteMark {
+  position: absolute;
+  right: -8px;
+  bottom: -118px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 340px;
+  line-height: 1;
+  color: #66734a1f;
+  pointer-events: none;
+}
+.inviteKicker {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #56633b;
+}
+.invite h3 {
+  margin: 20px 0 22px;
+  font-size: clamp(38px, 4.2vw, 60px);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+}
+.invite h3 em {
+  color: #66734a;
+}
+.invite p:not(.inviteKicker) {
+  position: relative;
+  max-width: 40ch;
+  font-size: 14px;
+  line-height: 1.75;
+  color: #5d5246;
+}
+.cta {
+  position: relative;
+  gap: 22px;
+  margin-top: 28px;
+  padding-right: 10px;
+}
+.cta .arrow {
+  background: #28201c14;
+}
+
+@media (min-width: 768px) {
+  .wallRegion {
+    margin-top: 52px;
+  }
+  .wall {
+    display: block;
+    columns: 2;
+    column-gap: 18px;
+  }
+  .card {
+    margin-bottom: 18px;
+    break-inside: avoid;
+  }
+  .card blockquote p {
+    font-size: 21px;
+  }
+}
+
+@media (min-width: 900px) {
+  .reviews {
+    --rv-header: 96px;
+    padding: 130px 5%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .reviews {
+    grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.5fr);
+    column-gap: clamp(48px, 7vw, 120px);
+    align-items: start;
+  }
+  .aside {
+    position: sticky;
+    top: calc(var(--rv-header) + 40px);
+  }
+  .main {
+    padding-top: 30px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mapLink:hover .arrow,
+  .cta:hover .arrow {
+    transform: translate(2px, -2px) scale(1.06);
+  }
+}

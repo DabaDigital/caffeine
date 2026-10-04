@@ -1,0 +1,48 @@
+/* Loading placeholders. Sections set --skeleton-base and --skeleton-shine to
+   match their surface; the shimmer stops for reduced motion. The base rules
+   have no specificity (:where), so a section can size and place the frame. */
+:where(.frame, .block) {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--skeleton-base, #2c231e);
+}
+.frame::before,
+.block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 25%,
+    var(--skeleton-shine, #f5eddf17) 50%,
+    transparent 75%
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+.frame img {
+  z-index: 1;
+}
+.frame[data-state="done"]::before {
+  opacity: 0;
+  animation: none;
+  transition: opacity 300ms ease;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame::before,
+  .block::before {
+    animation: none;
+    transform: none;
+    opacity: 0.6;
+  }
+}

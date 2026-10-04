@@ -1,0 +1,382 @@
+/* Offers as tear-off tickets on the cream counter. Contrast: muted text on
+   the ticket (#2a211c) 7.4:1, pistachio 9:1; stub ink on pistachio 9.6:1. */
+.offers {
+  --ticket: #2a211c;
+  --ticket-ink: var(--milk);
+  --ticket-muted: #c7b9a8;
+  --stub: var(--pistachio);
+  --stub-ink: #222b17;
+  --skeleton-base: #3b2f28;
+  --pager-ink: var(--coffee);
+  --pager-line: #28201c38;
+  --pager-active: var(--coffee);
+  --pager-active-ink: var(--milk);
+  padding: 72px 22px 88px;
+  color: var(--coffee);
+  background: var(--milk);
+}
+.inner {
+  max-width: 1280px;
+  margin: auto;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 40px;
+}
+.eyebrow {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: #56633b;
+}
+.heading h2 {
+  margin-top: 14px;
+  font-size: 49px;
+}
+.heading h2 em {
+  color: #66734a;
+}
+.heading > p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #716459;
+}
+
+.carousel {
+  position: relative;
+}
+/* The printer slot the tickets come out of. */
+.printer {
+  position: relative;
+  z-index: 2;
+  height: 18px;
+  margin: 0 -6px;
+  border-radius: 10px;
+  background: linear-gradient(#3b302a, #1c1512);
+  box-shadow:
+    0 10px 18px -10px #28201c99,
+    inset 0 1px 0 #f5eddf26;
+}
+.printer span {
+  position: absolute;
+  right: 16px;
+  bottom: 5px;
+  left: 16px;
+  height: 3px;
+  border-radius: 2px;
+  background: #0b0807;
+  box-shadow: inset 0 1px 2px #000;
+}
+
+/* Padded past the content on three sides so ticket shadows aren't clipped
+   by the scroll box; negative margins keep the layout in place. */
+.track {
+  position: relative;
+  z-index: 1;
+  margin: -10px -22px -40px;
+  padding: 0 22px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: 22px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.track::-webkit-scrollbar {
+  display: none;
+}
+.track:focus-visible {
+  outline-offset: -3px;
+}
+.list {
+  display: grid;
+  grid-auto-columns: min(86%, 380px);
+  grid-auto-flow: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0 0 52px;
+  list-style: none;
+}
+.slot {
+  padding-top: 10px;
+  scroll-snap-align: start;
+  perspective: 900px;
+  /* Follows the notched ticket, unlike a box-shadow. */
+  filter: drop-shadow(0 18px 22px #28201c40);
+}
+
+.ticket {
+  --notch: 13px;
+  --stub-width: 96px;
+  --cut: calc(100% - var(--stub-width));
+  position: relative;
+  display: flex;
+  height: 100%;
+  min-height: 320px;
+  border-radius: 18px;
+  background: var(--ticket);
+  color: var(--ticket-ink);
+  transform-style: preserve-3d;
+  /* Half-circle notches where the stub tears off. */
+  mask:
+    radial-gradient(circle var(--notch) at var(--cut) 0, #0000 97%, #000)
+      top / 100% 51% no-repeat,
+    radial-gradient(circle var(--notch) at var(--cut) 100%, #0000 97%, #000)
+      bottom / 100% 51% no-repeat;
+}
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 22px 20px 18px 22px;
+  container-type: inline-size;
+}
+.photos {
+  display: flex;
+  margin-bottom: 6px;
+}
+.photo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-right: -12px;
+  overflow: hidden;
+  border: 3px solid var(--ticket);
+  border-radius: 50%;
+  background: var(--skeleton-base);
+  color: var(--ticket-muted);
+}
+.fill {
+  position: absolute;
+  inset: 0;
+}
+.photo img {
+  object-fit: cover;
+}
+.kicker {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--stub);
+}
+.title {
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.description {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ticket-muted);
+}
+.products {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--stub);
+}
+.total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: auto;
+}
+.total strong {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 54px;
+  font-weight: 400;
+  line-height: 0.9;
+}
+.total small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ticket-muted);
+}
+.total s {
+  font-size: 12px;
+  color: var(--ticket-muted);
+}
+.lines {
+  display: grid;
+  gap: 9px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.lines li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+}
+.dots {
+  position: relative;
+  top: -0.25em;
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 1px dotted #f5eddf45;
+}
+.linePrice {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.linePrice strong {
+  font-weight: 700;
+}
+.linePrice s {
+  font-size: 11px;
+  color: var(--ticket-muted);
+}
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px dashed #f5eddf30;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ticket-muted);
+}
+.foot > span {
+  white-space: nowrap;
+}
+.ending {
+  color: var(--ticket-ink);
+}
+.ending[data-soon] {
+  color: var(--stub);
+}
+
+.stub {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: var(--stub-width);
+  padding: 22px 0 16px;
+  border-left: 2px dashed #28201c40;
+  border-radius: 0 18px 18px 0;
+  background: var(--stub);
+  color: var(--stub-ink);
+  transform-origin: 0 50%;
+  transition: transform 500ms var(--ease-out);
+}
+.stubLabel {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+.stubNote {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.barcode {
+  width: 54px;
+  height: 26px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--stub-ink) 0 2px,
+    transparent 2px 4px,
+    var(--stub-ink) 4px 5px,
+    transparent 5px 8px,
+    var(--stub-ink) 8px 11px,
+    transparent 11px 12px
+  );
+  opacity: 0.8;
+}
+.serial {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+/* Narrow tickets: each price goes under its product. */
+@container (max-width: 250px) {
+  .lines li {
+    flex-wrap: wrap;
+    gap: 2px 8px;
+  }
+  .lines li > span:first-child {
+    width: 100%;
+  }
+  .dots {
+    display: none;
+  }
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 20px;
+  margin-top: 4px;
+}
+.count {
+  font-size: 11px;
+  color: #716459;
+}
+
+@media (max-width: 599px) {
+  .ticket {
+    --stub-width: 80px;
+  }
+  .stubLabel {
+    font-size: 38px;
+  }
+}
+
+@media (min-width: 900px) {
+  .offers {
+    padding: 115px 5% 110px;
+  }
+  .heading {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 52px;
+  }
+  .heading h2 {
+    font-size: clamp(65px, 6.3vw, 91px);
+  }
+  .heading > p {
+    margin-bottom: 7px;
+  }
+  .track {
+    margin-inline: -28px;
+    padding-inline: 28px;
+    scroll-padding-inline: 28px;
+  }
+  .list {
+    grid-auto-columns: calc((100% - 2 * 22px) / 3);
+    gap: 22px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* The stub starts to tear when you reach for the ticket. */
+  .ticket:hover .stub {
+    transform: rotate(4deg) translateX(3px);
+  }
+}

@@ -1,0 +1,62 @@
+.scene {
+  position: absolute;
+  inset: -14% -25%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.scene canvas,
+.fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scene canvas {
+  display: block;
+}
+
+.scene[data-ready="true"] .fallback {
+  visibility: hidden;
+}
+
+.bean {
+  position: absolute;
+  height: auto;
+  filter: drop-shadow(0 12px 10px rgb(44 33 20 / 12%));
+}
+
+.bean0 {
+  top: 28%;
+  left: 18%;
+  width: 6%;
+  transform: rotate(-34deg);
+}
+
+.bean1 {
+  top: 18%;
+  right: 16%;
+  width: 6%;
+  transform: rotate(38deg);
+}
+
+.bean2 {
+  right: 16%;
+  bottom: 21%;
+  width: 7%;
+  transform: rotate(68deg);
+}
+
+.bean3 {
+  bottom: 13%;
+  left: 34%;
+  width: 4%;
+  transform: rotate(-21deg);
+}
+
+@media (max-width: 600px) {
+  .scene {
+    inset: -10% -18%;
+  }
+}

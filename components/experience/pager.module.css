@@ -1,0 +1,64 @@
+/* Pagination shared by the menu board, offers and reviews. Sections theme it
+   with --pager-ink, --pager-line, --pager-active and --pager-active-ink. */
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pages button,
+.arrow {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 6px;
+  border: 1px solid var(--pager-line, color-mix(in srgb, currentColor 22%, transparent));
+  border-radius: 14px;
+  background: transparent;
+  color: var(--pager-ink, currentColor);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    opacity 200ms ease,
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.arrow {
+  border-radius: 50%;
+}
+.pages button[aria-current="page"] {
+  border-color: var(--pager-active, currentColor);
+  background: var(--pager-active, currentColor);
+  color: var(--pager-active-ink, var(--coffee));
+}
+.pages button:active,
+.arrow:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.gap {
+  min-width: 18px;
+  text-align: center;
+  opacity: 0.6;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pages button:hover:not([aria-current="page"]),
+  .arrow:hover:not(:disabled) {
+    border-color: var(--pager-active, currentColor);
+  }
+}

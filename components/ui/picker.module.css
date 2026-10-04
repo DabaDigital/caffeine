@@ -1,0 +1,524 @@
+/* Shared look for Select, MultiSelect and DatePicker. Colors come from the
+   surrounding theme (see components/admin/admin.module.css) with café fallbacks,
+   so the pickers also work outside the dashboard. */
+.root {
+  position: relative;
+  min-width: 0;
+}
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-strong, #28201c38);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink, #28201c);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 160ms,
+    box-shadow 160ms;
+}
+.trigger:focus-visible,
+.trigger[aria-expanded="true"] {
+  outline: none;
+  border-color: var(--ink, #28201c);
+  box-shadow: 0 0 0 3px #c6d4a480;
+}
+.trigger[aria-invalid="true"] {
+  border-color: var(--danger, #a3392b);
+}
+.trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.trigger > svg:first-child {
+  flex-shrink: 0;
+  color: var(--ink-soft, #5c4d42);
+}
+.value {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+}
+.value > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.placeholder {
+  color: var(--muted, #6b5c50);
+}
+.chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--ink-soft, #5c4d42);
+  transition: transform 200ms;
+}
+.trigger[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+.popover {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 220px;
+  padding: 6px;
+  border: 1px solid var(--line, #28201c1a);
+  border-radius: 14px;
+  background: var(--card, #fffcf7);
+  box-shadow:
+    0 18px 40px #28201c26,
+    0 2px 6px #28201c14;
+  outline: none;
+  animation: pickerIn 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.popoverUp {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 268px;
+  overflow-y: auto;
+  outline: none;
+  overscroll-behavior: contain;
+}
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--ink, #28201c);
+  font-size: 14px;
+  cursor: pointer;
+}
+.option > svg {
+  flex-shrink: 0;
+  color: var(--ink-soft, #5c4d42);
+}
+.optionActive {
+  background: var(--sunken, #efe7d9);
+}
+.option[aria-selected="true"] {
+  font-weight: 600;
+}
+.option[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.optionText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.optionText small {
+  color: var(--muted, #6b5c50);
+  font-size: 12px;
+  font-weight: 400;
+}
+.check {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--pistachio-deep, #4d5a33) !important;
+}
+.box {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--line-strong, #28201c38);
+  border-radius: 5px;
+  background: #fff;
+  color: #fff;
+}
+.option[aria-selected="true"] .box {
+  border-color: var(--ink, #28201c);
+  background: var(--ink, #28201c);
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding: 2px 8px 8px;
+  border-bottom: 1px solid var(--line, #28201c1a);
+  color: var(--muted, #6b5c50);
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink, #28201c);
+  font: inherit;
+  font-size: 14px;
+}
+.empty {
+  margin: 0;
+  padding: 14px 10px;
+  color: var(--muted, #6b5c50);
+  font-size: 13px;
+  text-align: center;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 3px 3px 11px;
+  border-radius: 100px;
+  background: var(--pistachio-soft, #e4ebd0);
+  color: var(--pistachio-deep, #4d5a33);
+  font-size: 13px;
+  font-weight: 600;
+}
+.chip button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ---------- Calendar ---------- */
+.calendar {
+  right: auto;
+  width: 312px;
+  max-width: calc(100vw - 32px);
+  padding: 14px;
+}
+.calendarHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.month {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 22px;
+  line-height: 1;
+}
+.navButtons {
+  display: flex;
+  gap: 4px;
+}
+.navButton {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line, #28201c1a);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink, #28201c);
+  cursor: pointer;
+}
+.grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.grid th {
+  padding: 4px 0 8px;
+  color: var(--muted, #6b5c50);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+.grid td {
+  padding: 2px;
+  text-align: center;
+}
+.day {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 38px;
+  aspect-ratio: 1;
+  margin: auto;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink, #28201c);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+/* Neighbouring months stay clickable, so they keep readable contrast. */
+.dayOutside {
+  color: var(--muted, #6b5c50);
+}
+.dayToday {
+  box-shadow: inset 0 0 0 1px var(--ink, #28201c);
+  font-weight: 600;
+}
+td[aria-selected="true"] .day {
+  background: var(--ink, #28201c);
+  color: #f5eddf;
+  font-weight: 600;
+}
+.day[aria-disabled="true"] {
+  color: #28201c4d;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+.day:focus-visible {
+  outline: 2px solid var(--pistachio-deep, #4d5a33);
+  outline-offset: 1px;
+}
+.calendarFoot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line, #28201c1a);
+}
+.textButton {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 100px;
+  background: transparent;
+  color: var(--ink, #28201c);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.textButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Phone ---------- */
+.phone {
+  display: grid;
+  grid-template-columns: minmax(112px, 128px) minmax(0, 1fr);
+  gap: 8px;
+}
+.phone .popover {
+  right: auto;
+  width: min(300px, calc(100vw - 32px));
+}
+.input {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 14px;
+  border: 1px solid var(--line-strong, #28201c38);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink, #28201c);
+  font: inherit;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  transition:
+    border-color 160ms,
+    box-shadow 160ms;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--ink, #28201c);
+  box-shadow: 0 0 0 3px #c6d4a480;
+}
+.input[aria-invalid="true"] {
+  border-color: var(--danger, #a3392b);
+}
+
+/* ---------- Opening hours ---------- */
+.hours {
+  display: grid;
+  gap: 14px;
+}
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: start;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink, #28201c);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.track {
+  position: relative;
+  flex-shrink: 0;
+  width: 42px;
+  height: 24px;
+  border-radius: 100px;
+  background: #d9cfbf;
+  transition: background 180ms;
+}
+.track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px #28201c40;
+  transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.switch[aria-checked="true"] .track {
+  background: var(--pistachio-deep, #4d5a33);
+}
+.switch[aria-checked="true"] .track::after {
+  transform: translateX(18px);
+}
+.days {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line, #28201c1a);
+  border-radius: 14px;
+  background: #fff;
+}
+.dayRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 12px 14px;
+}
+.dayRow + .dayRow {
+  border-top: 1px solid var(--line, #28201c1a);
+}
+.dayName {
+  font-weight: 600;
+}
+.dayRow .switch {
+  justify-self: end;
+  min-width: 104px;
+  font-weight: 400;
+  color: var(--ink-soft, #5c4d42);
+}
+.periods {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+}
+.periods:empty {
+  display: none;
+}
+.period {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+.period .trigger {
+  min-height: 42px;
+  font-size: 14px;
+}
+.dash {
+  color: var(--muted, #6b5c50);
+}
+.removeButton {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line, #28201c1a);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--danger, #a3392b);
+  cursor: pointer;
+}
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 100px;
+  background: transparent;
+  color: var(--pistachio-deep, #4d5a33);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+@media (min-width: 720px) {
+  .dayRow {
+    grid-template-columns: 120px 120px minmax(0, 1fr);
+  }
+  .dayRow .switch {
+    justify-self: start;
+  }
+  .periods {
+    grid-column: auto;
+  }
+  .periods:empty {
+    display: grid;
+  }
+}
+
+@keyframes pickerIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .chip button:hover,
+  .navButton:hover,
+  .removeButton:hover,
+  .linkButton:hover,
+  .textButton:not(:disabled):hover,
+  .day:not([aria-disabled="true"]):hover {
+    background: var(--sunken, #efe7d9);
+  }
+  td[aria-selected="true"] .day:hover {
+    background: var(--ink, #28201c);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .popover {
+    animation: none;
+  }
+  .chevron {
+    transition: none;
+  }
+}
