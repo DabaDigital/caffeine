@@ -28,19 +28,6 @@ export function MotionRoot({ children }: { children: ReactNode }) {
       () => {
         const scope = root.current;
         if (!scope) return;
-        gsap.to("[data-marquee]", {
-          xPercent: -50,
-          duration: 35,
-          repeat: -1,
-          ease: "none",
-          scrollTrigger: {
-            trigger: "[data-marquee]",
-            start: "top bottom",
-            end: "bottom top",
-            toggleActions: "play pause play pause",
-          },
-        });
-
         scope
           .querySelectorAll<HTMLElement>("[data-reveal]")
           .forEach((element) => {

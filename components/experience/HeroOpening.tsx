@@ -144,7 +144,6 @@ export function HeroOpening({ place }: { place: string | null }) {
             { opacity: 1, duration: 0.15 },
             0.4,
           )
-          .to(select("[data-progress]"), { scaleX: 1, duration: 1 }, 0)
           .to(
             progress,
             {
@@ -415,9 +414,6 @@ export function HeroOpening({ place }: { place: string | null }) {
           >
             <RotateCcw size={13} /> REPLAY
           </button>
-        </div>
-        <div className={s.progressTrack} aria-hidden="true">
-          <span data-progress />
         </div>
 
         <div className={s.curtain} data-curtain aria-hidden="true">

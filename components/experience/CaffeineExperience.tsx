@@ -75,18 +75,6 @@ export default function CaffeineExperience({
         <main id="main">
           <HeroOpening place={place} />
 
-          <div className={s.marquee} aria-hidden="true">
-            <div data-marquee>
-              {[0, 1, 2, 3].map((i) => (
-                <span key={i}>
-                  GOOD COFFEE <span className={s.marqueeFlower}>✳</span> BETTER
-                  COMPANY <span className={s.marqueeFlower}>✳</span> ONE MORE
-                  SIP <span className={s.marqueeFlower}>✳</span>
-                </span>
-              ))}
-            </div>
-          </div>
-
           <MenuSection
             number={number("menu")}
             products={products}

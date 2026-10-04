@@ -27,6 +27,23 @@
     linear-gradient(180deg, #140c07c7 0%, #0f0906e6 58%, #0d0805f0 100%),
     url("/assets/osb-texture.webp") 0 0 / 420px 420px repeat;
 }
+/* Let the brown opening dissolve into the wall, including the pendant cords. */
+.wall::before {
+  content: "";
+  position: absolute;
+  inset: -1px 0 auto;
+  height: clamp(80px, 9vw, 150px);
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--coffee) 0%,
+    #28201cf2 15%,
+    #28201cb3 40%,
+    #28201c4d 70%,
+    #28201c00 100%
+  );
+}
 .inner {
   position: relative;
   z-index: 1;

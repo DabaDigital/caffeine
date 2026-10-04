@@ -409,35 +409,6 @@
   align-items: center;
   gap: 12px;
 }
-.marquee {
-  overflow: hidden;
-  background: var(--pistachio);
-  color: var(--coffee);
-  padding: 17px 0;
-  transform: rotate(-2deg);
-  margin: 0 -8px;
-  position: relative;
-  z-index: 2;
-}
-.marquee > div {
-  display: flex;
-  width: max-content;
-}
-.marquee > div > span {
-  display: flex;
-  align-items: center;
-  gap: 25px;
-  padding-right: 25px;
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.5px;
-  white-space: nowrap;
-}
-.marquee .marqueeFlower {
-  font-size: 29px;
-  font-weight: 400;
-  line-height: 1;
-}
 .menuSection {
   color: var(--coffee);
   background: var(--milk);
@@ -1162,17 +1133,6 @@
   }
   .heroFoot > span {
     display: block;
-  }
-  .marquee {
-    padding: 21px 0;
-  }
-  .marquee > div > span {
-    gap: 40px;
-    padding-right: 40px;
-    font-size: 24px;
-  }
-  .marquee .marqueeFlower {
-    font-size: 36px;
   }
   .menuSection {
     padding: 115px 5% 50px;
