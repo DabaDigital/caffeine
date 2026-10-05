@@ -484,7 +484,7 @@
 }
 .table tr {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px 12px;
   padding: 14px;
   background: var(--card);
@@ -500,6 +500,7 @@
 }
 .table td[data-label]::before {
   content: attr(data-label);
+  flex: 0 0 86px;
   min-width: 86px;
   font-size: 11px;
   font-weight: 600;
@@ -1418,13 +1419,32 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
   max-width: 100%;
 }
 .linkUrl span {
+  min-width: 0;
   max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.linkUrl svg {
+  flex-shrink: 0;
+}
+@media (max-width: 759px) {
+  .linkUrl {
+    flex: 1;
+    align-items: flex-start;
+  }
+  .linkUrl span {
+    max-width: none;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .linkUrl svg {
+    margin-top: 3px;
+  }
 }
 .hoursSummary {
   display: grid;
@@ -2223,5 +2243,35 @@
   .sidebarToggle svg,
   .navDialog {
     transition: none;
+  }
+}
+
+/* Offer badges and prices wrap within their mobile detail row. */
+.promotionOffer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  min-width: 0;
+}
+.promotionOffer .price {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  white-space: normal;
+}
+@media (max-width: 759px) {
+  .table td[data-label] {
+    align-items: flex-start;
+  }
+  .table td[data-label]::before {
+    padding-top: 4px;
+  }
+  .table .cellMain {
+    padding-bottom: 8px;
+  }
+  .promotionOffer .pill {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }

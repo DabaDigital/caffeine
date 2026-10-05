@@ -217,7 +217,7 @@ export default async function PromotionsPage({
                           </div>
                         </td>
                         <td data-label="Offer">
-                          <span className={s.itemTitle} style={{ gap: 8 }}>
+                          <span className={s.promotionOffer}>
                             <span className={`${s.pill} ${s.pillOn}`}>
                               {promotion.label}
                             </span>

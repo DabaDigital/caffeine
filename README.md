@@ -45,12 +45,14 @@ has its own list, add and edit pages, with loading skeletons shaped like each pa
 - **Phone numbers**: entered with a country picker (Morocco by default) and
   checked with `libphonenumber-js`; they are stored as `+212…` and shown as
   `+212 6 12 34 56 78`.
-- **Guest reviews**: reviews written on the homepage wait in Reviews under
-  “Waiting for approval”, in full. Approve publishes one; Decline keeps it off
-  the homepage, and it can still be approved later. Visitors can only file
-  pending reviews (through the `submit_review` database function, which also
-  caps the waiting list at 100), and only approved reviews can be published.
-  Reviews added in the dashboard are approved.
+- **Guest reviews**: reviews written on the homepage wait in Reviews under the
+  “Waiting for approval” tab, which opens first while any are waiting. Each row
+  has Approve (publishes it) and Decline (keeps it off the homepage; it can
+  still be approved later); tick several, or every waiting review, to decide
+  them at once. The list updates in place. Visitors can only file pending
+  reviews (through the `submit_review` database function, which also caps the
+  waiting list at 100), and only approved reviews can be published. Reviews
+  added in the dashboard are approved.
 
 ### Setup
 
