@@ -54,13 +54,13 @@ for (const viewport of [
     await expect(offers.locator("[data-horizontal]")).toHaveCount(1);
 
     // The first ticket starts flush with the heading…
-    await scrollPass(page, 0.02);
+    await scrollPass(page, 0);
     await expect.poll(async () => (await layout(page)).first).toBe(0);
     const pinned = (await layout(page)).stage;
     await expect(offers.getByText(/^Scroll to discover/)).toBeInViewport();
 
     // …and the last one ends flush with it, while the stage stays put.
-    await scrollPass(page, 0.98);
+    await scrollPass(page, 1);
     await expect
       .poll(async () => Math.abs((await layout(page)).last))
       .toBeLessThanOrEqual(1);
@@ -79,12 +79,12 @@ for (const viewport of [
   });
 }
 
-test("keys, the slider and a sideways swipe move the offers along", async ({
+test("keys, the slider and vertical wheel input move the offers along", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const offers = await openOffers(page);
-  await scrollPass(page, 0.02);
+  await scrollPass(page, 0);
   await expect.poll(async () => (await layout(page)).first).toBe(0);
 
   const row = offers.getByRole("region", { name: "Offers" });
@@ -109,14 +109,13 @@ test("keys, the slider and a sideways swipe move the offers along", async ({
   await slider.fill("0");
   await expect.poll(async () => (await layout(page)).first).toBe(0);
 
-  // A sideways trackpad swipe over the tickets scrolls the page, which moves
-  // the row, rather than being ignored.
+  // Vertical wheel input drives the row through native page scroll.
   const ticket = await offers.locator("[data-ticket]").first().boundingBox();
   await page.mouse.move(
     ticket!.x + ticket!.width / 2,
     ticket!.y + ticket!.height / 2,
   );
-  for (let step = 0; step < 8; step++) await page.mouse.wheel(60, 0);
+  for (let step = 0; step < 8; step++) await page.mouse.wheel(0, 60);
   await expect.poll(async () => (await layout(page)).first).toBeLessThan(-100);
 });
 

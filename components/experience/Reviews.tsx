@@ -174,7 +174,7 @@ export function Reviews({
               trigger: quote,
               start: "top bottom",
               end: "bottom top",
-              scrub: 1,
+              scrub: true,
             },
           },
         );

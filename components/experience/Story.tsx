@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { assets } from "@/data/brand";
 import { StoryAction } from "./Interactions";
 import { useSiteMotion } from "./Motion";
+import { watchScrollLayout } from "./scroll-layout";
 import { ShimmerImage } from "./Skeleton";
 import s from "./story.module.css";
 
@@ -74,7 +75,7 @@ export function Story({
               start: "top 78px",
               end: () =>
                 `+=${runway.offsetHeight - runway.firstElementChild!.clientHeight}`,
-              scrub: 0.35,
+              scrub: true,
               invalidateOnRefresh: true,
             },
           })
@@ -134,18 +135,29 @@ export function Story({
         // Room for each photo to drift inside its frame.
         gsap.set(pictures, { scale: 1.15 });
         const position = { value: 0 };
-        const render = () => {
+        let width = 0;
+        let step = 0;
+        let inset = 0;
+        let lean = 0;
+        let travel = 0;
+        const layout = () => {
           const first = photos[0];
           if (!first) return;
-          const width = first.offsetWidth;
-          const step = width + (parseFloat(getComputedStyle(rail).gap) || 0);
+          width = first.offsetWidth;
+          step = width + (parseFloat(getComputedStyle(rail).gap) || 0);
+          inset = (runway.clientWidth - width) / 2;
+          // Centre the first and last cards, including the existing frame.
+          travel = step * Math.max(0, photos.length - 1);
+          runway.style.height = `${runway.firstElementChild!.clientHeight + travel}px`;
           // Neighbours lean in until a sliver shows at the screen's edge.
-          const lean = Math.max(
+          lean = Math.max(
             0,
             step - (runway.clientWidth + width * 0.86) / 2 + 14,
           );
+        };
+        const render = () => {
           gsap.set(rail, {
-            x: (runway.clientWidth - width) / 2 - position.value * step,
+            x: inset - position.value * step,
           });
           photos.forEach((photo, index) => {
             const offset = gsap.utils.clamp(-1, 1, index - position.value);
@@ -161,26 +173,29 @@ export function Story({
             gsap.set(pictures[index], { xPercent: -offset * 6 });
           });
         };
+        layout();
         render();
-        // Each photo rests at the centre before the next glides in.
-        const glide = gsap.timeline({
-          defaults: { duration: 1, ease: "power2.inOut" },
+        // One linear mapping: no holds, snapping, or trailing tween.
+        gsap.to(position, {
+          value: photos.length - 1,
+          ease: "none",
           onUpdate: render,
           scrollTrigger: {
             trigger: runway,
             start: "top 78px",
-            end: () =>
-              `bottom top+=${78 + runway.firstElementChild!.clientHeight}`,
-            scrub: 0.8,
+            end: () => `+=${travel}`,
+            scrub: true,
+            invalidateOnRefresh: true,
             onRefresh: render,
           },
         });
-        for (let index = 1; index < photos.length; index++) {
-          glide.to(position, { value: index }, index === 1 ? 0.15 : "+=0.4");
-        }
-        glide.to({}, { duration: 0.15 });
+        ScrollTrigger.addEventListener("refreshInit", layout);
+        const unwatch = watchScrollLayout([runway.firstElementChild as HTMLElement, rail]);
         ScrollTrigger.refresh();
         return () => {
+          unwatch();
+          ScrollTrigger.removeEventListener("refreshInit", layout);
+          runway.style.removeProperty("height");
           delete runway.dataset.horizontal;
           gsap.set([rail, ...photos, ...pictures], {
             clearProps: "transform,opacity",
@@ -202,7 +217,7 @@ export function Story({
               trigger: section,
               start: "top top",
               end: "bottom bottom",
-              scrub: 0.6,
+              scrub: true,
               invalidateOnRefresh: true,
               onUpdate: ({ progress }) =>
                 setChapter(progress < 0.33 ? 0 : progress < 0.72 ? 1 : 2),

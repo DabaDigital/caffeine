@@ -108,7 +108,7 @@ export default function RootLayout({
       lang="en"
       className={`${display.variable} ${sans.variable} ${script.variable} ${condensed.variable} ${technical.variable}`}
     >
-      <body>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

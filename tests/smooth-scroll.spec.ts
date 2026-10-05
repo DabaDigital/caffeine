@@ -46,16 +46,17 @@ test.describe("on a touch phone", () => {
     hasTouch: true,
   });
 
-  test("a flick keeps gliding after the finger lifts", async ({ page }) => {
+  test("touch gestures are not intercepted or given synthetic inertia", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("html")).toHaveClass(/lenis/);
     await page.evaluate(() => window.scrollTo({ top: 2000, behavior: "instant" }));
-    const { released, settled } = await page.evaluate(async () => {
+    const { released, settled, canceled } = await page.evaluate(async () => {
       const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+      const canceled: boolean[] = [];
       const fire = (type: string, y: number) => {
         const touch = new Touch({ identifier: 1, target: document.body, clientX: 187, clientY: y });
         const touches = type === "touchend" ? [] : [touch];
-        window.dispatchEvent(
+        canceled.push(!window.dispatchEvent(
           new TouchEvent(type, {
             touches,
             targetTouches: touches,
@@ -63,7 +64,7 @@ test.describe("on a touch phone", () => {
             bubbles: true,
             cancelable: true,
           }),
-        );
+        ));
       };
       const start = window.scrollY;
       fire("touchstart", 600);
@@ -75,10 +76,11 @@ test.describe("on a touch phone", () => {
       fire("touchend", 360);
       const released = window.scrollY - start;
       for (let i = 0; i < 60; i++) await frame();
-      return { released, settled: window.scrollY - start };
+      return { released, settled: window.scrollY - start, canceled };
     });
-    expect(released).toBeGreaterThan(150);
-    expect(settled).toBeGreaterThan(released + 150);
+    expect(canceled.every((value) => !value)).toBe(true);
+    expect(released).toBe(0);
+    expect(settled).toBe(0);
   });
 
   test("the centred polaroid fills the screen inside a frame", async ({ page }) => {

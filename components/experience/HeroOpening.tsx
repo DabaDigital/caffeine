@@ -66,7 +66,7 @@ export function HeroOpening({ place }: { place: string | null }) {
             pin: stage,
             start: "top top",
             end: () => `+=${stage.offsetHeight * (desktop ? 1.35 : 0.8)}`,
-            scrub: 0.65,
+            scrub: true,
             invalidateOnRefresh: true,
             anticipatePin: 1,
             onUpdate: (self) => {

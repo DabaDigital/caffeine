@@ -476,6 +476,7 @@
 }
 /* Tickets slide out past the screen's edge rather than a scroll box's. */
 .runway[data-horizontal] .track {
+  touch-action: pan-y pinch-zoom;
   overflow: visible;
 }
 .runway[data-horizontal] .list {

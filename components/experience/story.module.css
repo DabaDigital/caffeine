@@ -229,7 +229,8 @@
   .gallery[data-horizontal] {
     /* Dark room left around the centred polaroid, below the 78px header. */
     --frame: 28px;
-    height: 220svh;
+    /* The measured horizontal travel supplies the sticky runway height. */
+    touch-action: pan-y pinch-zoom;
     margin-inline: -22px;
   }
   .gallery[data-horizontal] .galleryStage {

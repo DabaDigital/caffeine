@@ -47,25 +47,13 @@ export function MotionRoot({ children }: { children: ReactNode }) {
     media.add("(prefers-reduced-motion: no-preference)", () => {
       const lenis = new Lenis({
         anchors: { offset: -96 },
-        smoothWheel: true,
-        // Touch goes through Lenis too: phones get the same eased momentum,
-        // and the pinned scenes move in step with the finger.
-        syncTouch: true,
+        // User gestures stay native; Lenis only animates explicit navigation.
+        smoothWheel: false,
+        syncTouch: false,
+        duration: 0.25,
         allowNestedScroll: true,
         stopInertiaOnNavigate: true,
         prevent: (element) => !!element.closest("dialog, [data-lenis-prevent]"),
-        // Over a row that page scroll slides sideways ([data-horizontal]), a
-        // sideways swipe scrolls the page, so the row follows the gesture
-        // instead of ignoring it (or the browser going back a page).
-        virtualScroll: (data) => {
-          if (
-            Math.abs(data.deltaX) > Math.abs(data.deltaY) &&
-            data.event.target instanceof Element &&
-            data.event.target.closest("[data-horizontal]")
-          )
-            data.deltaY = data.deltaX;
-          return true;
-        },
       });
       scroller.current = lenis;
       lenis.on("scroll", ScrollTrigger.update);
@@ -158,7 +146,7 @@ export function MotionRoot({ children }: { children: ReactNode }) {
                   trigger: element,
                   start: "top bottom",
                   end: "bottom top",
-                  scrub: 1,
+                  scrub: true,
                 },
               },
             );
@@ -174,7 +162,7 @@ export function MotionRoot({ children }: { children: ReactNode }) {
                 trigger: element,
                 start: "top 83%",
                 end: "bottom 55%",
-                scrub: 0.6,
+                scrub: true,
               },
             });
           });

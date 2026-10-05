@@ -15,6 +15,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { SiteOffer } from "@/lib/content";
 import { cafeToday, currency, formatPrice, shortDate } from "@/lib/site";
 import { useSiteMotion } from "./Motion";
+import { watchScrollLayout } from "./scroll-layout";
 import { ShimmerImage } from "./Skeleton";
 import s from "./offers.module.css";
 
@@ -43,62 +44,6 @@ function ending(until: string | null, today: string | null) {
   return { text: `Until ${shortDate(until)}`, soon: false };
 }
 
-/** Scroll held before the first glide and after the last, and between
- *  glides, in ticket widths. */
-const EDGE = 0.15;
-const REST = 0.4;
-
-/**
- * A scroll-driven pass along the row: it glides one ticket at a time and
- * rests at each, so every ticket holds still, aligned, for a stretch of
- * scroll. Times are in ticket widths of scroll, offsets in px.
- */
-type Pass = {
-  glides: { from: number; to: number; start: number; end: number }[];
-  length: number;
-};
-
-function planPass(step: number, travel: number): Pass {
-  const glides: Pass["glides"] = [];
-  if (step <= 0) return { glides, length: 0 };
-  let time = EDGE;
-  for (let from = 0; from < travel - 1; from += step) {
-    const to = Math.min(travel, from + step);
-    const duration = (to - from) / step;
-    glides.push({ from, to, start: time, end: time + duration });
-    time += duration + REST;
-  }
-  return { glides, length: glides.length ? time - REST + EDGE : 0 };
-}
-
-/** How far the row has slid at a scroll progress (0–1) through the pass. */
-function offsetAt({ glides, length }: Pass, progress: number) {
-  const time = progress * length;
-  const ease = gsap.parseEase("power2.inOut");
-  let offset = 0;
-  for (const { from, to, start, end } of glides) {
-    if (time <= start) break;
-    offset =
-      time >= end
-        ? to
-        : from + (to - from) * ease((time - start) / (end - start));
-  }
-  return offset;
-}
-
-/** The scroll progress at which the row rests on a ticket (0 is the first). */
-function restAt({ glides, length }: Pass, stop: number) {
-  if (!length) return 0;
-  const index = Math.max(0, Math.min(glides.length, stop));
-  const time =
-    index === 0
-      ? EDGE / 2
-      : index === glides.length
-        ? length - EDGE / 2
-        : glides[index - 1].end + REST / 2;
-  return time / length;
-}
-
 /**
  * Offers as tear-off tickets in a sideways row. They print out of a slot as
  * the section arrives and tilt under the pointer. With motion on, the heading
@@ -122,10 +67,10 @@ export function OfferTickets({
   /** Set while page scroll drives the row instead of its own scrollbar. */
   const rail = useRef<{
     trigger: ScrollTrigger;
-    pass: Pass;
     travel: number;
   } | null>(null);
   const [view, setView] = useState({ page: 0, count: 1, step: 0, perView: 1 });
+  const geometry = useRef(view);
   const [scrollDriven, setScrollDriven] = useState(false);
 
   // Pages follow how many tickets fit; the current page follows the scroll.
@@ -145,7 +90,7 @@ export function OfferTickets({
     // smoothed row happens to be, so the slider never fights a drag.
     const driven = rail.current;
     const offset = driven
-      ? offsetAt(driven.pass, driven.trigger.progress)
+      ? driven.travel * driven.trigger.progress
       : element.scrollLeft;
     const end = driven
       ? driven.travel
@@ -154,6 +99,7 @@ export function OfferTickets({
       count - 1,
       offset >= end - 2 ? count - 1 : Math.round(offset / (step * perView)),
     );
+    geometry.current = { page, count, step, perView };
     setView((old) =>
       old.page === page &&
       old.count === count &&
@@ -187,10 +133,10 @@ export function OfferTickets({
   function goPage(page: number, immediate = false) {
     const driven = rail.current;
     // Scroll-driven, go to the page scroll at which the row rests there.
-    if (driven?.pass.length) {
+    if (driven?.travel) {
       const { start, end } = driven.trigger;
       scrollTo(
-        start + (end - start) * restAt(driven.pass, page * view.perView),
+        start + (end - start) * Math.min(1, page * view.perView * view.step / driven.travel),
         immediate,
       );
       return;
@@ -314,25 +260,18 @@ export function OfferTickets({
         const slide = gsap.quickSetter(list, "x", "px");
         const position = { value: 0 };
         let travel = 0;
-        let pass = planPass(0, 0);
         let hold = 0;
         // Before every measure: the overhang sets how long the section holds,
         // and how tall the stage is decides where it sticks.
         const layout = () => {
-          const first = list.firstElementChild as HTMLElement | null;
-          const step = first
-            ? first.offsetWidth +
-              (parseFloat(getComputedStyle(list).columnGap) || 0)
-            : 0;
           travel = overhang();
-          pass = planPass(step, travel);
-          hold = Math.round(pass.length * step);
+          hold = travel;
           frame.style.setProperty("--hold", `${hold}px`);
           frame.style.setProperty("--stage-height", `${held.offsetHeight}px`);
-          if (rail.current) Object.assign(rail.current, { pass, travel });
+          if (rail.current) Object.assign(rail.current, { travel });
         };
         const render = () => {
-          const offset = offsetAt(pass, position.value);
+          const offset = travel * position.value;
           slide(-offset);
           meter.current?.style.setProperty(
             "--progress",
@@ -353,17 +292,27 @@ export function OfferTickets({
             // taller than the screen and sticks by its bottom edge instead.
             start: () => `top ${parseFloat(getComputedStyle(held).top) || 0}px`,
             end: () => `+=${hold}`,
-            scrub: 0.8,
-            onUpdate: measure,
+            scrub: true,
+            invalidateOnRefresh: true,
+            onUpdate: () => {
+              // Layout is measured on resize, never for every scroll frame.
+              const next = Math.min(geometry.current.count - 1, Math.round(travel * position.value / (geometry.current.step * geometry.current.perView)));
+              if (geometry.current.page !== next) {
+                geometry.current.page = next;
+                setView((old) => ({ ...old, page: next }));
+              }
+            },
             onRefresh: render,
           },
         });
-        rail.current = { trigger: tween.scrollTrigger!, pass, travel };
+        rail.current = { trigger: tween.scrollTrigger!, travel };
         ScrollTrigger.addEventListener("refreshInit", layout);
+        const unwatch = watchScrollLayout([held, element, list]);
         setScrollDriven(true);
         ScrollTrigger.refresh();
         measure();
         return () => {
+          unwatch();
           ScrollTrigger.removeEventListener("refreshInit", layout);
           rail.current = null;
           delete frame.dataset.horizontal;
