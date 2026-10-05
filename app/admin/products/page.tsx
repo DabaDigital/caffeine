@@ -1,3 +1,5 @@
+import { Pagination } from "@/components/admin/Pagination";
+import { paginate } from "@/lib/pagination";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,6 +26,7 @@ export default async function ProductsPage({
   searchParams,
 }: {
   searchParams: Promise<{
+    page?: string;
     q?: string;
     category?: string;
     notice?: string;
@@ -31,7 +34,8 @@ export default async function ProductsPage({
   }>;
 }) {
   await requireAdmin();
-  const { q = "", category = "", notice, n } = await searchParams;
+  const params = await searchParams;
+  const { q = "", category = "", notice, n } = params;
   const supabase = await createClient();
   const [categories, all] = await Promise.all([
     supabase
@@ -39,6 +43,7 @@ export default async function ProductsPage({
       .select("id, name, icon")
       .order("sort_order")
       .order("name")
+      .order("id")
       .then(rows),
     supabase
       .from("products")
@@ -47,6 +52,7 @@ export default async function ProductsPage({
       )
       .order("sort_order")
       .order("name")
+      .order("id")
       .then(rows),
   ]);
 
@@ -69,7 +75,7 @@ export default async function ProductsPage({
       <PageHeader
         eyebrow="Menu"
         title="Products"
-        description="Everything on your menu. Featured products fill the homepage carousel; the first one with a photo stars in the hero."
+        description="Manage your menu, update prices, and choose what guests see."
         actions={
           categories.length > 0 && (
             <AddLink href="/admin/products/new">
@@ -79,6 +85,28 @@ export default async function ProductsPage({
         }
       />
       <Notice key={n} notice={notice} item="Product" />
+      <div className={s.menuSummary} aria-label="Menu summary">
+        <div>
+          <span>Total products</span>
+          <strong>{all.length}</strong>
+        </div>
+        <div>
+          <span>On the menu</span>
+          <strong>
+            {all.filter((product) => product.is_available).length}
+          </strong>
+        </div>
+        <div>
+          <span>Featured</span>
+          <strong>{featuredCount}</strong>
+        </div>
+        <div>
+          <span>Hidden</span>
+          <strong>
+            {all.filter((product) => !product.is_available).length}
+          </strong>
+        </div>
+      </div>
 
       {categories.length === 0 ? (
         <EmptyState
@@ -136,106 +164,119 @@ export default async function ProductsPage({
               Try another word or category.
             </EmptyState>
           ) : (
-            <table className={s.table}>
-              <thead>
-                <tr>
-                  <th scope="col">Product</th>
-                  <th scope="col">Category</th>
-                  <th scope="col">Price</th>
-                  <th scope="col">On menu</th>
-                  <th scope="col">Featured</th>
-                  <th scope="col">
-                    <span className="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((product) => {
-                  const productCategory = categoryById.get(product.category_id);
-                  const Icon =
-                    categoryIconComponents[
-                      productCategory &&
-                      isOneOf(categoryIcons, productCategory.icon)
-                        ? productCategory.icon
-                        : "coffee"
-                    ];
-                  const image = displayableImage(product.image_url);
-                  return (
-                    <tr key={product.id}>
-                      <td className={s.cellMain}>
-                        <div className={s.itemTitle}>
-                          <span className={s.thumb}>
-                            {image ? (
-                              <Image src={image} alt="" fill sizes="56px" />
-                            ) : (
-                              <Icon size={22} aria-hidden="true" />
-                            )}
-                          </span>
-                          <div>
-                            <Link href={`/admin/products/${product.id}`}>
-                              <strong>{product.name}</strong>
-                            </Link>
-                            <span>
-                              {product.description || "No description yet"}
+            <>
+              <table className={`${s.table} ${s.productTable}`}>
+                <caption className="sr-only">
+                  Products with category, price, menu visibility, featured
+                  status, and editing actions
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Product</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">On menu</th>
+                    <th scope="col">Featured</th>
+                    <th scope="col">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginate(products, params.page).items.map((product) => {
+                    const productCategory = categoryById.get(
+                      product.category_id,
+                    );
+                    const Icon =
+                      categoryIconComponents[
+                        productCategory &&
+                        isOneOf(categoryIcons, productCategory.icon)
+                          ? productCategory.icon
+                          : "coffee"
+                      ];
+                    const image = displayableImage(product.image_url);
+                    return (
+                      <tr key={product.id}>
+                        <td className={s.cellMain}>
+                          <div className={s.itemTitle}>
+                            <span className={s.thumb}>
+                              {image ? (
+                                <Image src={image} alt="" fill sizes="56px" />
+                              ) : (
+                                <Icon size={22} aria-hidden="true" />
+                              )}
                             </span>
+                            <div>
+                              <Link href={`/admin/products/${product.id}`}>
+                                <strong>{product.name}</strong>
+                              </Link>
+                              <span title={product.description ?? undefined}>
+                                {product.description || "No description yet"}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td data-label="Category">
-                        <span className={s.pill}>
-                          <Icon size={13} aria-hidden="true" />
-                          {productCategory?.name ?? "—"}
-                        </span>
-                      </td>
-                      <td data-label="Price">
-                        {product.price !== null ? (
-                          <span className={s.price}>
-                            {formatPrice(product.price)} {currency}
+                        </td>
+                        <td data-label="Category">
+                          <span className={s.pill}>
+                            <Icon size={13} aria-hidden="true" />
+                            {productCategory?.name ?? "—"}
                           </span>
-                        ) : (
-                          <span className={s.muted}>No price</span>
-                        )}
-                      </td>
-                      <td data-label="On menu">
-                        <ToggleSwitch
-                          action={toggleProduct}
-                          id={product.id}
-                          field="is_available"
-                          checked={product.is_available}
-                          label={`Show ${product.name} on the menu`}
-                        />
-                      </td>
-                      <td data-label="Featured">
-                        <ToggleSwitch
-                          action={toggleProduct}
-                          id={product.id}
-                          field="is_featured"
-                          checked={product.is_featured}
-                          label={`Feature ${product.name} on the homepage`}
-                        />
-                      </td>
-                      <td className={s.cellActions}>
-                        <div className={s.actions}>
-                          <Link
-                            href={`/admin/products/${product.id}`}
-                            className={s.iconButton}
-                            aria-label={`Edit ${product.name}`}
-                          >
-                            <Pencil size={17} />
-                          </Link>
-                          <DeleteButton
-                            action={deleteProduct}
+                        </td>
+                        <td data-label="Price">
+                          {product.price !== null ? (
+                            <span className={s.price}>
+                              {formatPrice(product.price)} {currency}
+                            </span>
+                          ) : (
+                            <span className={s.muted}>No price</span>
+                          )}
+                        </td>
+                        <td data-label="On menu">
+                          <ToggleSwitch
+                            action={toggleProduct}
                             id={product.id}
-                            name={product.name}
-                            what="product"
+                            field="is_available"
+                            checked={product.is_available}
+                            label={`Show ${product.name} on the menu`}
                           />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td data-label="Featured">
+                          <ToggleSwitch
+                            action={toggleProduct}
+                            id={product.id}
+                            field="is_featured"
+                            checked={product.is_featured}
+                            label={`Feature ${product.name} on the homepage`}
+                          />
+                        </td>
+                        <td className={s.cellActions}>
+                          <div className={s.actions}>
+                            <Link
+                              href={`/admin/products/${product.id}`}
+                              className={s.iconButton}
+                              aria-label={`Edit ${product.name}`}
+                            >
+                              <Pencil size={17} />
+                            </Link>
+                            <DeleteButton
+                              action={deleteProduct}
+                              id={product.id}
+                              name={product.name}
+                              what="product"
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <Pagination
+                pagination={paginate(products, params.page)}
+                pathname="/admin/products"
+                searchParams={params}
+              />
+            </>
           )}
         </>
       )}

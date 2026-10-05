@@ -37,7 +37,7 @@ const cards = [
 /**
  * "More than a coffee stop", told as a walk in: on wide screens the scene
  * holds still while scrolling zooms through the storefront window into the
- * café. Elsewhere, and with reduced motion, the chapters simply stack.
+ * café. Phones slide from outside to inside; reduced motion stacks the chapters.
  */
 export function Story({
   number,
@@ -47,6 +47,7 @@ export function Story({
   place: string | null;
 }) {
   const root = useRef<HTMLElement>(null);
+  const walkIn = useRef<HTMLDivElement>(null);
   const gallery = useRef<HTMLDivElement>(null);
   const [chapter, setChapter] = useState(0);
   const { paused, scrollTo } = useSiteMotion();
@@ -56,6 +57,68 @@ export function Story({
     if (!section || paused) return;
     gsap.registerPlugin(ScrollTrigger);
     const media = gsap.matchMedia();
+    media.add(
+      "(max-width: 899px) and (min-height: 560px) and (prefers-reduced-motion: no-preference)",
+      () => {
+        const runway = walkIn.current;
+        if (!runway) return;
+        runway.dataset.walkIn = "on";
+        const select = gsap.utils.selector(runway);
+        // Native sticky positioning keeps the scene beneath the mobile header.
+        // The short holds at either end leave both captions time to be read.
+        gsap
+          .timeline({
+            defaults: { ease: "none" },
+            scrollTrigger: {
+              trigger: runway,
+              start: "top 78px",
+              end: () =>
+                `+=${runway.offsetHeight - runway.firstElementChild!.clientHeight}`,
+              scrub: 0.35,
+              invalidateOnRefresh: true,
+            },
+          })
+          .fromTo(
+            select("[data-outside-photo]"),
+            { scale: 1, transformOrigin: door },
+            { scale: 1.16, duration: 0.75 },
+            0,
+          )
+          .to(
+            select('[data-chapter="0"] [data-copy]'),
+            { y: -24, opacity: 0, duration: 0.18 },
+            0.18,
+          )
+          .fromTo(
+            select('[data-chapter="1"]'),
+            { yPercent: 100 },
+            { yPercent: 0, duration: 0.5 },
+            0.25,
+          )
+          .fromTo(
+            select("[data-inside-photo]"),
+            { scale: 1.12 },
+            { scale: 1, duration: 0.55 },
+            0.25,
+          )
+          .fromTo(
+            select('[data-chapter="1"] [data-copy] > *'),
+            { y: 20, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.14, stagger: 0.05 },
+            0.65,
+          )
+          .fromTo(
+            select("[data-walk-progress]"),
+            { scaleX: 0 },
+            { scaleX: 1, duration: 1 },
+            0,
+          );
+        ScrollTrigger.refresh();
+        return () => {
+          delete runway.dataset.walkIn;
+        };
+      },
+    );
     media.add(
       "(max-width: 899px) and (prefers-reduced-motion: no-preference)",
       () => {
@@ -243,51 +306,66 @@ export function Story({
       aria-labelledby="story-title"
     >
       <div className={s.stage}>
-        <div className={s.chapter} data-chapter="0">
-          <div className={s.photo} data-outside-photo>
-            <ShimmerImage
-              src="/assets/story-storefront-evening.png"
-              alt="The Caffeine storefront at dusk: black façade, gold sign and lit windows"
-              fill
-              sizes="100vw"
-              quality={85}
-              className={s.fill}
-            />
-          </div>
-          <div className={s.scrim} />
-          <div className={s.copy} data-copy>
-            <p className={s.eyebrow}>{number} — MORE THAN A COFFEE STOP</p>
-            <h2 id="story-title" className={s.title}>
-              Less rush. <span className="sr-only">More ritual.</span>
-            </h2>
-            <p className={s.lede}>
-              <em>Du grain à la tasse.</em> From the bean to your cup
-              {place ? `, right here in ${place}` : ""}.
-            </p>
-          </div>
-        </div>
+        <div className={s.walkIn} ref={walkIn}>
+          <div className={s.walkStage}>
+            <div className={s.chapter} data-chapter="0">
+              <div className={s.photo} data-outside-photo>
+                <ShimmerImage
+                  src="/assets/story-storefront-evening.png"
+                  alt="The Caffeine storefront at dusk: black façade, gold sign and lit windows"
+                  fill
+                  sizes="(max-width: 899px) 150vh, 100vw"
+                  quality={85}
+                  className={s.fill}
+                />
+              </div>
+              <div className={s.scrim} />
+              <div className={s.copy} data-copy>
+                <p className={s.eyebrow}>{number} — MORE THAN A COFFEE STOP</p>
+                <h2 id="story-title" className={s.title}>
+                  Less rush. <span className="sr-only">More ritual.</span>
+                </h2>
+                <p className={s.lede}>
+                  <em>Du grain à la tasse.</em> From the bean to your cup
+                  {place ? `, right here in ${place}` : ""}.
+                </p>
+                <p className={s.walkCue} aria-hidden="true">
+                  <span>↓</span> Scroll to step inside
+                </p>
+              </div>
+            </div>
 
-        <div className={s.chapter} data-chapter="1">
-          <div className={s.photo} data-inside-photo>
-            <ShimmerImage
-              src="/assets/story-espresso-bar.png"
-              alt="Inside Caffeine: OSB walls, Edison bulbs and the coffee bar"
-              fill
-              sizes="100vw"
-              quality={85}
-              className={s.fill}
-            />
-          </div>
-          <div className={s.scrim} />
-          <div className={s.shade} data-inside-shade />
-          <div className={s.copy} data-copy>
-            <p className={s.title} aria-hidden="true">
-              <em>More ritual.</em>
-            </p>
-            <p className={s.lede}>
-              That first sip. The extra bite. The conversation that turns into
-              another coffee.
-            </p>
+            <div className={s.chapter} data-chapter="1">
+              <div className={s.photo} data-inside-photo>
+                <ShimmerImage
+                  src="/assets/story-espresso-bar.png"
+                  alt="Inside Caffeine: OSB walls, Edison bulbs and the coffee bar"
+                  fill
+                  sizes="(max-width: 899px) 150vh, 100vw"
+                  quality={85}
+                  className={s.fill}
+                />
+              </div>
+              <div className={s.scrim} />
+              <div className={s.shade} data-inside-shade />
+              <div className={s.copy} data-copy>
+                <p className={s.title} aria-hidden="true">
+                  <em>More ritual.</em>
+                </p>
+                <p className={s.lede}>
+                  That first sip. The extra bite. The conversation that turns
+                  into another coffee.
+                </p>
+              </div>
+            </div>
+
+            <div className={s.walkProgress} aria-hidden="true">
+              <span>01 / Outside</span>
+              <div>
+                <i data-walk-progress />
+              </div>
+              <span>02 / Inside</span>
+            </div>
           </div>
         </div>
 

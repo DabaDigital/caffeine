@@ -22,6 +22,7 @@ type Review = Pick<
   | "source"
   | "reviewed_on"
   | "is_published"
+  | "status"
 >;
 
 export function ReviewForm({
@@ -76,12 +77,15 @@ export function ReviewForm({
             placeholder="When was it written?"
           />
         </Fields>
-        <ToggleField
-          name="is_published"
-          label="Published"
-          description="Published reviews appear on the homepage."
-          defaultChecked={review?.is_published ?? true}
-        />
+        {/* Guests' reviews are published by approving them. */}
+        {(!review || review.status === "approved") && (
+          <ToggleField
+            name="is_published"
+            label="Published"
+            description="Published reviews appear on the homepage."
+            defaultChecked={review?.is_published ?? true}
+          />
+        )}
       </FormSection>
     </AdminForm>
   );

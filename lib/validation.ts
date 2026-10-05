@@ -244,6 +244,23 @@ export const reviewSchema = z.object({
   is_published: flag,
 });
 
+/** A review written on the homepage; the database files it as pending. */
+export const guestReviewSchema = reviewSchema.pick({
+  author_name: true,
+  rating: true,
+  comment: true,
+});
+
+const decision = z.enum(["approve", "decline"]);
+
+export const reviewDecisionSchema = z.object({ id, decision });
+
+/** Several reviews at once; at most 100 can be waiting (see submit_review). */
+export const reviewsDecisionSchema = z.object({
+  ids: z.array(id).min(1).max(100),
+  decision,
+});
+
 export const promotionSchema = z
   .object({
     title: required("Title", 80),

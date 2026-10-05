@@ -9,13 +9,16 @@ import {
   useState,
   useTransition,
 } from "react";
+import { useFormStatus } from "react-dom";
 import {
+  Check,
   CircleAlert,
   LoaderCircle,
   Search,
   ShieldCheck,
   ShieldOff,
   Trash2,
+  X,
 } from "lucide-react";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { emptyFormState, type FormState } from "@/lib/form-state";
@@ -117,12 +120,15 @@ export function ToggleSwitch({
   field,
   checked,
   label,
+  states,
 }: {
   action: Action;
   id: string;
   field: string;
   checked: boolean;
   label: string;
+  /** Words shown beside the switch when on and off, e.g. Published, Hidden. */
+  states?: [on: string, off: string];
 }) {
   const [state, formAction, pending] = useActionState(action, emptyFormState);
   const [optimistic, setOptimistic] = useOptimistic(checked);
@@ -145,6 +151,10 @@ export function ToggleSwitch({
         disabled={pending}
       >
         <span className={s.switchTrack} aria-hidden="true" />
+        {/* The switch already announces its state. */}
+        {states && (
+          <span aria-hidden="true">{optimistic ? states[0] : states[1]}</span>
+        )}
       </button>
       {state.message && (
         <span className={s.switchError} role="alert">
@@ -200,6 +210,66 @@ export function RoleButton({
   );
 }
 
+/** Approve (publish) or decline a review a guest wrote on the homepage. */
+export function ReviewDecision({
+  action,
+  id,
+  name,
+  declined = false,
+}: {
+  action: Action;
+  id: string;
+  /** The guest's name, so every review's buttons have their own names. */
+  name: string;
+  /** A declined review can still be approved. */
+  declined?: boolean;
+}) {
+  const [state, formAction] = useActionState(action, emptyFormState);
+  return (
+    <form action={formAction} className={s.decision}>
+      <input type="hidden" name="id" value={id} />
+      {state.message && (
+        <span className={s.switchError} role="alert">
+          {state.message}
+        </span>
+      )}
+      {!declined && <DecisionButton decision="decline" name={name} />}
+      <DecisionButton decision="approve" name={name} />
+    </form>
+  );
+}
+
+function DecisionButton({
+  decision,
+  name,
+}: {
+  decision: "approve" | "decline";
+  name: string;
+}) {
+  // Both buttons wait while either is sending; the one pressed spins.
+  const { pending, data } = useFormStatus();
+  const busy = pending && data?.get("decision") === decision;
+  const approve = decision === "approve";
+  const Icon = busy ? LoaderCircle : approve ? Check : X;
+  return (
+    <button
+      type="submit"
+      name="decision"
+      value={decision}
+      className={approve ? s.button : s.buttonSecondary}
+      disabled={pending}
+    >
+      <Icon
+        size={16}
+        className={busy ? s.spin : undefined}
+        aria-hidden="true"
+      />
+      {approve ? "Approve" : "Decline"}
+      <span className="sr-only"> the review by {name}</span>
+    </button>
+  );
+}
+
 /** Search and filter controls that update the URL, so results can be shared. */
 export function ListFilters({
   search,
@@ -227,6 +297,7 @@ export function ListFilters({
     const params = new URLSearchParams(window.location.search);
     params.delete("notice");
     params.delete("n");
+    params.delete("page");
     if (value) params.set(key, value);
     else params.delete(key);
     const query = params.toString();

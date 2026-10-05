@@ -4,9 +4,15 @@ import { useEffect, useState } from "react";
 import { CircleCheck, X } from "lucide-react";
 import s from "./admin.module.css";
 
-const verbs = { created: "added", updated: "saved", deleted: "deleted" };
+const verbs = {
+  created: "added",
+  updated: "saved",
+  deleted: "deleted",
+  approved: "approved",
+  declined: "declined",
+};
 
-/** One-time confirmation after a save or delete redirect. */
+/** One-time confirmation after a save, delete or review decision redirect. */
 export function Notice({
   notice,
   item,

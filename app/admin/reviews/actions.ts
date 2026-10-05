@@ -11,7 +11,19 @@ import {
 } from "@/lib/admin";
 import type { FormState } from "@/lib/form-state";
 import { createClient } from "@/lib/supabase/server";
-import { id, reviewSchema } from "@/lib/validation";
+import {
+  id,
+  reviewDecisionSchema,
+  reviewSchema,
+  reviewsDecisionSchema,
+} from "@/lib/validation";
+
+// The database only publishes approved reviews. Forms hide the switch for the
+// others, so this only shows when someone else declined the review meanwhile.
+const notApproved = {
+  "23514":
+    "This review isn't approved, so it can't be published. Approve it first.",
+};
 
 export async function saveReview(
   _state: FormState,
@@ -33,11 +45,73 @@ export async function saveReview(
         .eq("id", reviewId.data)
         .select("id")
     : await supabase.from("reviews").insert(parsed.data).select("id");
-  if (error) return databaseError(error);
+  if (error) return databaseError(error, notApproved);
   if (!data.length) return { message: "This review no longer exists." };
 
   revalidateContent("reviews");
   redirect(noticeUrl("/admin/reviews", reviewId ? "updated" : "created"));
+}
+
+// Approving publishes a review; declining keeps it off the homepage.
+const decisions = {
+  approve: { status: "approved", is_published: true },
+  decline: { status: "declined", is_published: false },
+} as const;
+
+/** Approves or declines a guest's review from its own page. */
+export async function moderateReview(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireAdmin();
+  const parsed = reviewDecisionSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success)
+    return { message: "Couldn't update. Refresh and retry." };
+  const { id: reviewId, decision } = parsed.data;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("reviews")
+    .update(decisions[decision])
+    .eq("id", reviewId)
+    .select("id");
+  if (error) return databaseError(error);
+  if (!data.length) return { message: "This review no longer exists." };
+
+  revalidateContent("reviews");
+  redirect(
+    noticeUrl(
+      "/admin/reviews",
+      decision === "approve" ? "approved" : "declined",
+    ),
+  );
+}
+
+/**
+ * Approves or declines one review or several from the list. The list updates
+ * where it is, so the page and scroll position stay put.
+ */
+export async function moderateReviews(
+  ids: string[],
+  decision: "approve" | "decline",
+): Promise<FormState & { count?: number }> {
+  await requireAdmin();
+  const parsed = reviewsDecisionSchema.safeParse({ ids, decision });
+  if (!parsed.success)
+    return { message: "Couldn't update. Refresh and retry." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("reviews")
+    .update(decisions[parsed.data.decision])
+    .in("id", parsed.data.ids)
+    .select("id");
+  if (error) return databaseError(error);
+  if (!data.length)
+    return { message: "These reviews no longer exist. Refresh the page." };
+
+  revalidateContent("reviews");
+  return { count: data.length };
 }
 
 export async function deleteReview(
@@ -73,7 +147,7 @@ export async function toggleReview(
     .from("reviews")
     .update({ is_published: toggle.data.value })
     .eq("id", toggle.data.id);
-  if (error) return databaseError(error);
+  if (error) return databaseError(error, notApproved);
 
   revalidateContent("reviews");
   return {};

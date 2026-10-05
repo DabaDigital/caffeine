@@ -297,6 +297,7 @@ export type Database = {
           rating: number;
           reviewed_on: string | null;
           source: string | null;
+          status: string;
           updated_at: string;
         };
         Insert: {
@@ -308,6 +309,7 @@ export type Database = {
           rating: number;
           reviewed_on?: string | null;
           source?: string | null;
+          status?: string;
           updated_at?: string;
         };
         Update: {
@@ -319,6 +321,7 @@ export type Database = {
           rating?: number;
           reviewed_on?: string | null;
           source?: string | null;
+          status?: string;
           updated_at?: string;
         };
         Relationships: [];
@@ -374,6 +377,14 @@ export type Database = {
           title: string;
         };
         Returns: string;
+      };
+      submit_review: {
+        Args: {
+          author_name: string;
+          comment: string;
+          rating: number;
+        };
+        Returns: undefined;
       };
     };
     Enums: {

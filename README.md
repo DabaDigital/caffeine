@@ -23,8 +23,9 @@ sticky rail on phones, a side index from 1024px. A category shows a photo column
 once a third of its products have photos; JPEG photos fill their frame, while
 transparent PNG or WebP cutouts float in it. Reviews show the average and
 breakdown of every published review, a featured quote and the latest twelve;
-until one is published, the section invites guests to review the café on Google
-Maps.
+until one is published, the section invites guests to write the first. Guests
+write reviews with “Write a review” (or on Google Maps); theirs appear once an
+admin approves them.
 
 ## Dashboard
 
@@ -44,16 +45,22 @@ has its own list, add and edit pages, with loading skeletons shaped like each pa
 - **Phone numbers**: entered with a country picker (Morocco by default) and
   checked with `libphonenumber-js`; they are stored as `+212…` and shown as
   `+212 6 12 34 56 78`.
+- **Guest reviews**: reviews written on the homepage wait in Reviews under
+  “Waiting for approval”, in full. Approve publishes one; Decline keeps it off
+  the homepage, and it can still be approved later. Visitors can only file
+  pending reviews (through the `submit_review` database function, which also
+  caps the waiting list at 100), and only approved reviews can be published.
+  Reviews added in the dashboard are approved.
 
 ### Setup
 
 1. Put the project URL and publishable key in `.env.local` (see `.env.example`).
    Both are needed at build time.
 2. In the Supabase SQL editor, run the files in `supabase/migrations` in order
-   (`…_caffeine_dashboard.sql`, `…_promotions.sql`, `…_location_hours.sql`),
-   then optionally `supabase/seed.sql` for the starting menu. Each migration is
-   safe to run twice. The seed prices (45, 55 and 25 MAD) come from the
-   supplied design: confirm them in the dashboard.
+   (`…_caffeine_dashboard.sql`, `…_promotions.sql`, `…_location_hours.sql`,
+   `…_guest_reviews.sql`), then optionally `supabase/seed.sql` for the starting
+   menu. Each migration is safe to run twice. The seed prices (45, 55 and 25
+   MAD) come from the supplied design: confirm them in the dashboard.
 3. Create your account in Authentication → Users → Add user (tick “Auto Confirm
    User”), then promote it in the SQL editor:
 
@@ -152,6 +159,7 @@ connected: the order button clearly explains that orders are placed in the café
 
 Native dialogs support Escape, focus containment and focus restoration. The page
 remains readable with JavaScript disabled; motion never gates the initial HTML.
+
 # Google Maps reviews
 
 Set `GOOGLE_PLACES_API_KEY` and `GOOGLE_PLACE_ID` in `.env.local` and in the hosting environment. The key stays on the server; restrict it to Places API (New) and rotate exposed keys. Restart the development server after changing these variables.

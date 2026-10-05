@@ -7,11 +7,12 @@ import {
   googlePlaceSchema,
   type GooglePlaceReviews,
 } from "@/lib/google-reviews";
-import { ArrowUpRight, Star } from "lucide-react";
+import { ArrowUpRight, PenLine, Star } from "lucide-react";
 import type { ReviewStats, SiteReview } from "@/lib/content";
 import { useSiteMotion } from "./Motion";
 import { ReviewWall } from "./ReviewWall";
 import { ReviewText } from "./ReviewText";
+import { WriteReview } from "./WriteReview";
 import x from "./experience.module.css";
 import s from "./reviews.module.css";
 
@@ -59,6 +60,8 @@ export function Reviews({
   location: { name: string; mapUrl: string } | null;
 }) {
   const section = useRef<HTMLElement>(null);
+  const writeDialog = useRef<HTMLDialogElement>(null);
+  const writeReview = () => writeDialog.current?.showModal();
   const { paused } = useSiteMotion();
   const [google, setGoogle] = useState<GooglePlaceReviews | null>(null);
   useEffect(() => {
@@ -209,6 +212,16 @@ export function Reviews({
             <em>kind words.</em>
           </h2>
           <p className={s.intro}>Little moments, in our guests’ own words.</p>
+          {/* Without reviews yet, the invitation beside this offers it. */}
+          {featured && (
+            <button
+              type="button"
+              className={`${x.button} ${s.writeCta}`}
+              onClick={writeReview}
+            >
+              Write a review <PenLine size={18} aria-hidden="true" />
+            </button>
+          )}
         </div>
         {stats && (
           <div className={s.summary} data-reveal data-summary>
@@ -320,7 +333,11 @@ export function Reviews({
                 </figcaption>
               </figure>
               {others.length > 0 && (
-                <ReviewWall filler={<YourTurn location={location} />}>
+                <ReviewWall
+                  filler={
+                    <YourTurn location={location} onWrite={writeReview} />
+                  }
+                >
                   {others.map((review) => (
                     <ReviewCard key={review.id} review={review} />
                   ))}
@@ -342,11 +359,21 @@ export function Reviews({
                 {google
                   ? "Discover more guest experiences on Google Maps. "
                   : "We’re gathering our first guest reviews. "}
-                {location
-                  ? "Leave a few words on Google Maps, or tell our team next time you stop by."
-                  : "Tell our team about your visit next time you stop by."}
+                Be the first to leave a few words here.
               </p>
-              {location && <MapLink location={location} button />}
+              <div className={s.inviteActions}>
+                <button
+                  type="button"
+                  className={`${x.button} ${s.cta}`}
+                  onClick={writeReview}
+                >
+                  Write a review
+                  <span className={s.arrow} aria-hidden="true">
+                    <PenLine size={16} strokeWidth={1.7} />
+                  </span>
+                </button>
+                {location && <MapLink location={location} />}
+              </div>
             </div>
           )}
         </div>
@@ -370,6 +397,7 @@ export function Reviews({
           </div>
         )}
       </div>
+      <WriteReview dialog={writeDialog} />
     </section>
   );
 }
@@ -418,8 +446,10 @@ function ReviewCard({ review }: { review: SiteReview }) {
 /** Ends a short last page: the next kind words could be theirs. */
 function YourTurn({
   location,
+  onWrite,
 }: {
   location: { name: string; mapUrl: string } | null;
+  onWrite: () => void;
 }) {
   return (
     <li className={s.card} data-card>
@@ -431,13 +461,15 @@ function YourTurn({
         <p className={s.yourTurnTitle}>
           How was your <em>little coffee break?</em>
         </p>
-        {location ? (
-          <MapLink location={location} />
-        ) : (
-          <p className={s.yourTurnNote}>
-            Tell our team about your visit next time you stop by.
-          </p>
-        )}
+        <div className={s.yourTurnActions}>
+          <button type="button" className={s.mapLink} onClick={onWrite}>
+            Write a review
+            <span className={s.arrow} aria-hidden="true">
+              <PenLine size={15} strokeWidth={1.7} />
+            </span>
+          </button>
+          {location && <MapLink location={location} />}
+        </div>
       </div>
     </li>
   );
@@ -530,21 +562,15 @@ function Stars({ value, size }: { value: number; size: number }) {
   );
 }
 
-function MapLink({
-  location,
-  button = false,
-}: {
-  location: { name: string; mapUrl: string };
-  button?: boolean;
-}) {
+function MapLink({ location }: { location: { name: string; mapUrl: string } }) {
   return (
     <a
-      className={button ? `${x.button} ${s.cta}` : s.mapLink}
+      className={s.mapLink}
       href={location.mapUrl}
       target="_blank"
       rel="noopener noreferrer"
     >
-      {button ? "Review us on Google Maps" : "Share yours on Google Maps"}
+      Share yours on Google Maps
       <span className={s.arrow} aria-hidden="true">
         <ArrowUpRight size={16} strokeWidth={1.7} />
       </span>

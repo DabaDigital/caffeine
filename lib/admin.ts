@@ -68,7 +68,7 @@ export async function nextSortOrder(
 /** List URL that shows a one-time success notice (`n` keeps repeats distinct). */
 export function noticeUrl(
   path: string,
-  notice: "created" | "updated" | "deleted",
+  notice: "created" | "updated" | "deleted" | "approved" | "declined",
 ) {
   return `${path}?notice=${notice}&n=${Date.now().toString(36)}`;
 }

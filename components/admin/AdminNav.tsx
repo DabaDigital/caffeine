@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   BadgePercent,
+  PanelLeftClose,
   Coffee,
   ExternalLink,
   LayoutDashboard,
@@ -52,7 +53,12 @@ type Viewer = { email: string | null; fullName: string | null };
 
 function Brand() {
   return (
-    <Link href="/admin" className={s.brand}>
+    <Link
+      href="/admin"
+      className={s.brand}
+      aria-label="Caffeine dashboard"
+      title="Caffeine dashboard"
+    >
       <Image src={assets.mark} alt="" width={34} height={34} />
       <span>
         Caffeine
@@ -65,9 +71,11 @@ function Brand() {
 function NavContent({
   viewer,
   onNavigate,
+  collapsed = false,
 }: {
   viewer: Viewer;
   onNavigate?: () => void;
+  collapsed?: boolean;
 }) {
   const pathname = usePathname();
   const isActive = (href: string) =>
@@ -83,11 +91,14 @@ function NavContent({
       <nav className={s.nav} aria-label="Dashboard">
         <Link
           href="/admin"
+          aria-label="Overview"
+          title={collapsed ? "Overview" : undefined}
           className={linkClass("/admin")}
           aria-current={isActive("/admin") ? "page" : undefined}
           onClick={onNavigate}
         >
-          <LayoutDashboard size={18} /> Overview
+          <LayoutDashboard size={18} />
+          <span className={s.navText}>Overview</span>
         </Link>
         {groups.map((group) => (
           <div key={group.label} className={s.nav}>
@@ -96,19 +107,30 @@ function NavContent({
               <Link
                 key={href}
                 href={href}
+                aria-label={label}
+                title={collapsed ? label : undefined}
                 className={linkClass(href)}
                 aria-current={isActive(href) ? "page" : undefined}
                 onClick={onNavigate}
               >
-                <Icon size={18} /> {label}
+                <Icon size={18} />
+                <span className={s.navText}>{label}</span>
               </Link>
             ))}
           </div>
         ))}
       </nav>
       <div className={s.navFooter}>
-        <a href="/" target="_blank" rel="noopener" className={s.navLink}>
-          <ExternalLink size={18} /> View website
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener"
+          className={s.navLink}
+          aria-label="View website"
+          title={collapsed ? "View website" : undefined}
+        >
+          <ExternalLink size={18} />
+          <span className={s.navText}>View website</span>
         </a>
         <div className={s.viewer}>
           <span className={s.avatar} aria-hidden="true">
@@ -120,8 +142,14 @@ function NavContent({
           </div>
         </div>
         <form action={signOut}>
-          <button type="submit" className={`${s.navLink} ${s.signOut}`}>
-            <LogOut size={18} /> Sign out
+          <button
+            type="submit"
+            className={`${s.navLink} ${s.signOut}`}
+            aria-label="Sign out"
+            title={collapsed ? "Sign out" : undefined}
+          >
+            <LogOut size={18} />
+            <span className={s.navText}>Sign out</span>
           </button>
         </form>
       </div>
@@ -131,6 +159,7 @@ function NavContent({
 
 export function AdminNav({ viewer }: { viewer: Viewer }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const [collapsed, setCollapsed] = useState(false);
   const close = () => dialog.current?.close();
 
   return (
@@ -172,10 +201,27 @@ export function AdminNav({ viewer }: { viewer: Viewer }) {
           <NavContent viewer={viewer} onNavigate={close} />
         </div>
       </dialog>
-      <aside className={s.sidebar}>
+      <aside className={s.sidebar} data-collapsed={collapsed}>
         <div className={s.navPanel}>
           <Brand />
-          <NavContent viewer={viewer} />
+          <button
+            type="button"
+            className={s.sidebarToggle}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
+            aria-controls="desktop-dashboard-navigation"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            onClick={() => setCollapsed((value) => !value)}
+          >
+            <PanelLeftClose size={19} aria-hidden="true" />
+            <span className={s.navText}>Collapse sidebar</span>
+          </button>
+          <div
+            id="desktop-dashboard-navigation"
+            className={s.desktopNavContent}
+          >
+            <NavContent viewer={viewer} collapsed={collapsed} />
+          </div>
         </div>
       </aside>
     </>

@@ -2,25 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   BadgePercent,
-  ChevronRight,
-  CircleCheck,
-  CircleDot,
   Coffee,
-  ExternalLink,
   MapPinned,
   MessageSquareQuote,
   Phone,
-  Plus,
   Share2,
   Tags,
   Users,
 } from "lucide-react";
-import { PageHeader } from "@/components/admin/Page";
+import { Overview } from "@/components/admin/Overview";
 import { requireAdmin } from "@/lib/auth";
 import { rows } from "@/lib/admin";
 import { cafeToday, promotionStatus } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
-import s from "@/components/admin/admin.module.css";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -38,6 +32,7 @@ export default async function OverviewPage() {
     reviews,
     team,
     promotionResult,
+    waitingResult,
   ] = await Promise.all([
     supabase
       .from("products")
@@ -54,10 +49,14 @@ export default async function OverviewPage() {
     supabase.from("reviews").select("id, is_published").then(rows),
     supabase.from("profiles").select("id, role").then(rows),
     supabase.from("promotions").select("id, is_active, starts_on, ends_on"),
+    supabase.from("reviews").select("id").eq("status", "pending"),
   ]);
   // Promotions arrive with their own migration; until then there are none.
   const promotions =
     promotionResult.error?.code === "PGRST205" ? null : rows(promotionResult);
+  // So do guests' reviews (42703: the status column is missing).
+  const waiting =
+    waitingResult.error?.code === "42703" ? 0 : rows(waitingResult).length;
   const today = cafeToday();
   const running = (promotions ?? []).filter(
     (promotion) => promotionStatus(promotion, today) === "running",
@@ -122,7 +121,7 @@ export default async function OverviewPage() {
       label: "Reviews",
       icon: MessageSquareQuote,
       value: reviews.length,
-      sub: `${published.length} published`,
+      sub: `${published.length} published${waiting ? ` · ${waiting} waiting` : ""}`,
     },
     {
       href: "/admin/team",
@@ -226,107 +225,11 @@ export default async function OverviewPage() {
   const firstName = (viewer.fullName || viewer.email || "").split(/[ @]/)[0];
 
   return (
-    <div className={s.page}>
-      <PageHeader
-        eyebrow="Overview"
-        title={firstName ? `Hello, ${firstName}` : "Hello"}
-        description="Everything visitors see on the homepage is managed here. Changes go live as soon as you save."
-        actions={
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener"
-            className={s.buttonSecondary}
-          >
-            <ExternalLink size={16} aria-hidden="true" /> View website
-          </a>
-        }
-      />
-      <div className={s.stats}>
-        {stats.map(({ href, label, icon: Icon, value, sub }) => (
-          <Link key={href} href={href} className={`${s.card} ${s.stat}`}>
-            <span className={s.statTop}>
-              {label}
-              <Icon aria-hidden="true" />
-            </span>
-            <span className={s.statValue}>{value}</span>
-            <span className={s.statSub}>{sub}</span>
-          </Link>
-        ))}
-      </div>
-      <div className={s.overviewGrid}>
-        <section
-          className={`${s.card} ${s.panel}`}
-          aria-labelledby="health-title"
-        >
-          <h2 id="health-title">Homepage health</h2>
-          <ul className={s.checklist}>
-            {checks.map((check, index) => (
-              <li key={index}>
-                {check.ok ? (
-                  <CircleCheck
-                    size={18}
-                    className={s.checkOk}
-                    aria-label="Done"
-                  />
-                ) : (
-                  <CircleDot
-                    size={18}
-                    className={s.checkTodo}
-                    aria-label="To do"
-                  />
-                )}
-                <span>{check.text}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-        <section
-          className={`${s.card} ${s.panel}`}
-          aria-labelledby="quick-title"
-        >
-          <h2 id="quick-title">Quick actions</h2>
-          <div className={s.quickActions}>
-            {[
-              {
-                href: "/admin/products/new",
-                label: "Add a product",
-                icon: Coffee,
-              },
-              {
-                href: "/admin/promotions/new",
-                label: "Create a promotion",
-                icon: BadgePercent,
-              },
-              {
-                href: "/admin/reviews/new",
-                label: "Add a review",
-                icon: MessageSquareQuote,
-              },
-              {
-                href: "/admin/locations/new",
-                label: "Add a location",
-                icon: MapPinned,
-              },
-              {
-                href: "/admin/team",
-                label: "Manage admin access",
-                icon: Users,
-              },
-            ].map(({ href, label, icon: Icon }) => (
-              <Link key={href} href={href}>
-                {href.endsWith("/new") ? (
-                  <Plus size={18} aria-hidden="true" />
-                ) : (
-                  <Icon size={18} aria-hidden="true" />
-                )}
-                {label}
-                <ChevronRight size={16} aria-hidden="true" />
-              </Link>
-            ))}
-          </div>
-        </section>
-      </div>
-    </div>
+    <Overview
+      firstName={firstName}
+      stats={stats}
+      checks={checks}
+      waiting={waiting}
+    />
   );
 }

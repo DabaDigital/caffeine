@@ -11,6 +11,89 @@
 .stage {
   position: relative;
 }
+.walkIn,
+.walkStage {
+  display: contents;
+}
+.walkCue,
+.walkProgress {
+  display: none;
+}
+
+/* A short, reversible walk inside on phones. Without motion the photos
+   remain in normal document flow, with all copy immediately available. */
+@media (max-width: 899px) and (min-height: 560px) and (prefers-reduced-motion: no-preference) {
+  .walkIn[data-walk-in] {
+    display: block;
+    position: relative;
+    height: 185svh;
+  }
+  .walkIn[data-walk-in] .walkStage {
+    display: block;
+    position: sticky;
+    top: 78px;
+    height: calc(100svh - 78px);
+    overflow: clip;
+    background: var(--coffee);
+  }
+  .walkIn[data-walk-in] .chapter {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+    will-change: transform;
+  }
+  .walkIn[data-walk-in] .chapter[data-chapter="1"] {
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -16px 48px #00000040;
+  }
+  .walkIn[data-walk-in] .photo {
+    will-change: transform;
+  }
+  .walkIn[data-walk-in] .copy {
+    padding-bottom: 42px;
+  }
+  .walkIn[data-walk-in] .walkCue {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 24px;
+    color: var(--gold);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .walkCue > span {
+    font-size: 18px;
+    line-height: 1;
+  }
+  .walkIn[data-walk-in] .walkProgress {
+    position: absolute;
+    inset: 24px 22px auto;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    pointer-events: none;
+    color: var(--milk);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 8px #000;
+  }
+  .walkProgress > div {
+    flex: 1;
+    height: 1px;
+    background: #f7f0e359;
+  }
+  .walkProgress i {
+    display: block;
+    height: 100%;
+    background: var(--gold);
+    transform-origin: left;
+  }
+}
 .chapter {
   position: relative;
   display: grid;

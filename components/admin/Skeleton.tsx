@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import s from "./admin.module.css";
+import o from "./overview.module.css";
 
 // Loading states mirror each page's real layout, so content settles in place.
 
@@ -144,20 +145,25 @@ function ListSkeleton({
   label: string;
   cells: Cell[];
   rows?: number;
-  toolbar?: boolean;
+  /** Search and filter controls, or a row of status tabs. */
+  toolbar?: boolean | "tabs";
 }) {
   return (
     <Loading label={label}>
       <HeaderSkeleton />
-      {toolbar && (
-        <div className={s.toolbar}>
-          <Skeleton
-            width="min(100%, 360px)"
-            height={46}
-            style={{ borderRadius: 12 }}
-          />
-          <Skeleton width={200} height={46} style={{ borderRadius: 12 }} />
-        </div>
+      {toolbar === "tabs" ? (
+        <Skeleton width="min(100%, 600px)" height={50} shape="pill" />
+      ) : (
+        toolbar && (
+          <div className={s.toolbar}>
+            <Skeleton
+              width="min(100%, 360px)"
+              height={46}
+              style={{ borderRadius: 12 }}
+            />
+            <Skeleton width={200} height={46} style={{ borderRadius: 12 }} />
+          </div>
+        )
       )}
       <table className={s.table}>
         <thead>
@@ -255,12 +261,11 @@ export const ContactsSkeleton = () => (
 export const ReviewsSkeleton = () => (
   <ListSkeleton
     label="reviews"
-    toolbar
+    toolbar="tabs"
     cells={[
       { kind: "media", media: "avatar" },
-      { kind: "stars", label: "Rating" },
-      { kind: "text", label: "Review", width: 240, lines: 2 },
-      { kind: "switch", label: "Published" },
+      { kind: "text", label: "Review", width: 280, lines: 2 },
+      { kind: "switch", label: "Status" },
       { kind: "actions" },
     ]}
   />
@@ -281,34 +286,60 @@ export const TeamSkeleton = () => (
 
 export function OverviewSkeleton() {
   return (
-    <Loading label="overview">
-      <HeaderSkeleton />
-      <div className={s.stats}>
-        {Array.from({ length: 7 }, (_, index) => (
-          <div key={index} className={`${s.card} ${s.stat}`}>
-            <div className={s.statTop}>
-              <Skeleton width={80} />
-              <Skeleton width={38} height={38} style={{ borderRadius: 12 }} />
-            </div>
-            <Skeleton width={56} height={40} />
-            <Skeleton width="70%" height={12} />
-          </div>
-        ))}
+    <div className={o.overview} role="status" aria-busy="true">
+      <span className="sr-only">Loading overview…</span>
+      <div className={o.header}>
+        <div className={s.skeletonStack}>
+          <Skeleton width={150} height={10} />
+          <Skeleton width="min(300px, 90%)" height={56} />
+          <Skeleton width="min(270px, 90%)" height={14} />
+        </div>
+        <Skeleton width={140} height={46} shape="pill" />
       </div>
-      <div className={s.overviewGrid}>
-        {[5, 4].map((lines, index) => (
-          <div key={index} className={`${s.card} ${s.panel}`}>
-            <Skeleton width={180} height={26} />
-            {Array.from({ length: lines }, (_, line) => (
-              <div key={line} style={{ display: "flex", gap: 12 }}>
-                <Skeleton width={18} height={18} shape="circle" />
-                <Skeleton width={`${85 - line * 9}%`} />
+      <div className={o.workspace}>
+        <div className={o.surface}>
+          <div className={o.menu}>
+            <Skeleton width={100} height={18} />
+            <div className={o.menuBody}>
+              <Skeleton width="55%" height={100} />
+              <Skeleton width={70} height={76} />
+            </div>
+            <div className={o.menuFooter}>
+              <Skeleton width="45%" height={16} />
+              <Skeleton width="25%" height={16} />
+            </div>
+          </div>
+          <div className={o.metrics}>
+            {[0, 1].map((i) => (
+              <div key={i} className={o.metric}>
+                <Skeleton height={38} />
               </div>
             ))}
           </div>
+        </div>
+        {[3, 5, 5].map((lines, index) => (
+          <div key={index} className={o.surface}>
+            <div className={o.panel}>
+              <div className={o.sectionHeading}>
+                <div className={s.skeletonStack}>
+                  <Skeleton width={120} height={10} />
+                  <Skeleton width={160} height={26} />
+                </div>
+              </div>
+              <div className={s.skeletonStack}>
+                {Array.from({ length: lines }, (_, i) => (
+                  <Skeleton
+                    key={i}
+                    width={i % 2 ? "85%" : "100%"}
+                    height={index === 0 ? 64 : 40}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
-    </Loading>
+    </div>
   );
 }
 

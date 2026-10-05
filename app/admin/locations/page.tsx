@@ -1,3 +1,5 @@
+import { Pagination } from "@/components/admin/Pagination";
+import { paginate } from "@/lib/pagination";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,16 +21,18 @@ export const metadata: Metadata = { title: "Locations" };
 export default async function LocationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ notice?: string; n?: string }>;
+  searchParams: Promise<{ page?: string; notice?: string; n?: string }>;
 }) {
   await requireAdmin();
-  const { notice, n } = await searchParams;
+  const params = await searchParams;
+  const { notice, n } = params;
   const supabase = await createClient();
   const locations = await supabase
     .from("locations")
     .select("id, name, area, city, address, hours, image_url, is_active")
     .order("sort_order")
     .order("name")
+    .order("id")
     .then(rows);
   const primaryId = locations.find((location) => location.is_active)?.id;
 
@@ -58,95 +62,102 @@ export default async function LocationsPage({
           Add your address and opening hours so visitors know where to find you.
         </EmptyState>
       ) : (
-        <table className={s.table}>
-          <thead>
-            <tr>
-              <th scope="col">Location</th>
-              <th scope="col">Address</th>
-              <th scope="col">Hours</th>
-              <th scope="col">Visible</th>
-              <th scope="col">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {locations.map((location) => {
-              const image = displayableImage(location.image_url);
-              const hours = parseHours(location.hours);
-              return (
-                <tr key={location.id}>
-                  <td className={s.cellMain}>
-                    <div className={s.itemTitle}>
-                      <span className={s.thumb}>
-                        {image ? (
-                          <Image src={image} alt="" fill sizes="56px" />
-                        ) : (
-                          <Store size={22} aria-hidden="true" />
-                        )}
-                      </span>
-                      <div>
-                        <Link href={`/admin/locations/${location.id}`}>
-                          <strong>{location.name}</strong>
-                        </Link>
-                        <span>
-                          {[location.area, location.city]
-                            .filter(Boolean)
-                            .join(", ")}
-                          {location.id === primaryId
-                            ? " · Featured on homepage"
-                            : ""}
+        <>
+          <table className={s.table}>
+            <thead>
+              <tr>
+                <th scope="col">Location</th>
+                <th scope="col">Address</th>
+                <th scope="col">Hours</th>
+                <th scope="col">Visible</th>
+                <th scope="col">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginate(locations, params.page).items.map((location) => {
+                const image = displayableImage(location.image_url);
+                const hours = parseHours(location.hours);
+                return (
+                  <tr key={location.id}>
+                    <td className={s.cellMain}>
+                      <div className={s.itemTitle}>
+                        <span className={s.thumb}>
+                          {image ? (
+                            <Image src={image} alt="" fill sizes="56px" />
+                          ) : (
+                            <Store size={22} aria-hidden="true" />
+                          )}
                         </span>
+                        <div>
+                          <Link href={`/admin/locations/${location.id}`}>
+                            <strong>{location.name}</strong>
+                          </Link>
+                          <span>
+                            {[location.area, location.city]
+                              .filter(Boolean)
+                              .join(", ")}
+                            {location.id === primaryId
+                              ? " · Featured on homepage"
+                              : ""}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td data-label="Address">
-                    {location.address || (
-                      <span className={s.muted}>Not added yet</span>
-                    )}
-                  </td>
-                  <td data-label="Hours">
-                    {hours ? (
-                      <span className={s.hoursSummary}>
-                        {summarizeHours(hours).map((line) => (
-                          <span key={line}>{line}</span>
-                        ))}
-                      </span>
-                    ) : (
-                      <span className={s.muted}>Not added yet</span>
-                    )}
-                  </td>
-                  <td data-label="Visible">
-                    <ToggleSwitch
-                      action={toggleLocation}
-                      id={location.id}
-                      field="is_active"
-                      checked={location.is_active}
-                      label={`Show ${location.name} on the website`}
-                    />
-                  </td>
-                  <td className={s.cellActions}>
-                    <div className={s.actions}>
-                      <Link
-                        href={`/admin/locations/${location.id}`}
-                        className={s.iconButton}
-                        aria-label={`Edit ${location.name}`}
-                      >
-                        <Pencil size={17} />
-                      </Link>
-                      <DeleteButton
-                        action={deleteLocation}
+                    </td>
+                    <td data-label="Address">
+                      {location.address || (
+                        <span className={s.muted}>Not added yet</span>
+                      )}
+                    </td>
+                    <td data-label="Hours">
+                      {hours ? (
+                        <span className={s.hoursSummary}>
+                          {summarizeHours(hours).map((line) => (
+                            <span key={line}>{line}</span>
+                          ))}
+                        </span>
+                      ) : (
+                        <span className={s.muted}>Not added yet</span>
+                      )}
+                    </td>
+                    <td data-label="Visible">
+                      <ToggleSwitch
+                        action={toggleLocation}
                         id={location.id}
-                        name={location.name}
-                        what="location"
+                        field="is_active"
+                        checked={location.is_active}
+                        label={`Show ${location.name} on the website`}
                       />
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td className={s.cellActions}>
+                      <div className={s.actions}>
+                        <Link
+                          href={`/admin/locations/${location.id}`}
+                          className={s.iconButton}
+                          aria-label={`Edit ${location.name}`}
+                        >
+                          <Pencil size={17} />
+                        </Link>
+                        <DeleteButton
+                          action={deleteLocation}
+                          id={location.id}
+                          name={location.name}
+                          what="location"
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <Pagination
+            pagination={paginate(locations, params.page)}
+            pathname="/admin/locations"
+            searchParams={params}
+          />
+        </>
       )}
     </div>
   );

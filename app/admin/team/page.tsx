@@ -1,3 +1,5 @@
+import { Pagination } from "@/components/admin/Pagination";
+import { paginate } from "@/lib/pagination";
 import type { Metadata } from "next";
 import { ExternalLink, ShieldCheck } from "lucide-react";
 import { Hint, PageHeader } from "@/components/admin/Page";
@@ -25,7 +27,12 @@ const usersUrl = projectRef
   ? `https://supabase.com/dashboard/project/${projectRef}/auth/users`
   : null;
 
-export default async function TeamPage() {
+export default async function TeamPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const params = await searchParams;
   const viewer = await requireAdmin();
   const supabase = await createClient();
   const members = await supabase
@@ -33,6 +40,7 @@ export default async function TeamPage() {
     .select("id, email, full_name, role, created_at")
     .order("role")
     .order("created_at")
+    .order("id")
     .then(rows);
 
   return (
@@ -46,67 +54,75 @@ export default async function TeamPage() {
         Admins can change the whole menu and grant or remove admin access. At
         least one admin must always remain.
       </Hint>
-      <table className={s.table}>
-        <thead>
-          <tr>
-            <th scope="col">Account</th>
-            <th scope="col">Role</th>
-            <th scope="col">Joined</th>
-            <th scope="col">
-              <span className="sr-only">Actions</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {members.map((member) => {
-            const name = member.full_name || member.email || "Unnamed account";
-            const isYou = member.id === viewer.id;
-            return (
-              <tr key={member.id}>
-                <td className={s.cellMain}>
-                  <div className={s.itemTitle}>
-                    <span
-                      className={`${s.thumb} ${s.thumbRound}`}
-                      aria-hidden="true"
-                    >
-                      {name.charAt(0).toUpperCase()}
-                    </span>
-                    <div>
-                      <strong>
-                        {name}
-                        {isYou ? " (you)" : ""}
-                      </strong>
-                      {member.full_name && <span>{member.email}</span>}
+      <>
+        <table className={s.table}>
+          <thead>
+            <tr>
+              <th scope="col">Account</th>
+              <th scope="col">Role</th>
+              <th scope="col">Joined</th>
+              <th scope="col">
+                <span className="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginate(members, params.page).items.map((member) => {
+              const name =
+                member.full_name || member.email || "Unnamed account";
+              const isYou = member.id === viewer.id;
+              return (
+                <tr key={member.id}>
+                  <td className={s.cellMain}>
+                    <div className={s.itemTitle}>
+                      <span
+                        className={`${s.thumb} ${s.thumbRound}`}
+                        aria-hidden="true"
+                      >
+                        {name.charAt(0).toUpperCase()}
+                      </span>
+                      <div>
+                        <strong>
+                          {name}
+                          {isYou ? " (you)" : ""}
+                        </strong>
+                        {member.full_name && <span>{member.email}</span>}
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td data-label="Role">
-                  <span
-                    className={`${s.pill} ${member.role === "admin" ? s.pillAdmin : ""}`}
-                  >
-                    {member.role === "admin" ? "Admin" : "No access"}
-                  </span>
-                </td>
-                <td data-label="Joined">
-                  {joined.format(new Date(member.created_at))}
-                </td>
-                <td className={s.cellActions}>
-                  {isYou ? (
-                    <span className={s.muted}>Signed in as you</span>
-                  ) : (
-                    <RoleButton
-                      action={setRole}
-                      userId={member.id}
-                      role={member.role}
-                      name={name}
-                    />
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  </td>
+                  <td data-label="Role">
+                    <span
+                      className={`${s.pill} ${member.role === "admin" ? s.pillAdmin : ""}`}
+                    >
+                      {member.role === "admin" ? "Admin" : "No access"}
+                    </span>
+                  </td>
+                  <td data-label="Joined">
+                    {joined.format(new Date(member.created_at))}
+                  </td>
+                  <td className={s.cellActions}>
+                    {isYou ? (
+                      <span className={s.muted}>Signed in as you</span>
+                    ) : (
+                      <RoleButton
+                        action={setRole}
+                        userId={member.id}
+                        role={member.role}
+                        name={name}
+                      />
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <Pagination
+          pagination={paginate(members, params.page)}
+          pathname="/admin/team"
+          searchParams={params}
+        />
+      </>
 
       <section
         className={`${s.card} ${s.panel}`}

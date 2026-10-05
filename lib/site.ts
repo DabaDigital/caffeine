@@ -57,6 +57,10 @@ export const contactTypeLabels: Record<ContactType, string> = {
   whatsapp: "WhatsApp",
 };
 
+/** Reviews guests write on the homepage wait as pending for an admin. */
+export const reviewStatuses = ["pending", "approved", "declined"] as const;
+export type ReviewStatus = (typeof reviewStatuses)[number];
+
 export const isOneOf = <T extends string>(
   list: readonly T[],
   value: string,

@@ -1,3 +1,5 @@
+import { Pagination } from "@/components/admin/Pagination";
+import { paginate } from "@/lib/pagination";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,17 +46,24 @@ const money = (value: number) => `${formatPrice(value)} ${currency}`;
 export default async function PromotionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; notice?: string; n?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    status?: string;
+    notice?: string;
+    n?: string;
+  }>;
 }) {
   await requireAdmin();
-  const { status = "", notice, n } = await searchParams;
+  const params = await searchParams;
+  const { status = "", notice, n } = params;
   const supabase = await createClient();
   const result = await supabase
     .from("promotions")
     .select(
       "id, title, description, discount_type, discount_value, starts_on, ends_on, is_active, promotion_products(products(id, name, price, image_url))",
     )
-    .order("starts_on", { ascending: false });
+    .order("starts_on", { ascending: false })
+    .order("id");
 
   const header = (
     <PageHeader
@@ -153,119 +162,128 @@ export default async function PromotionsPage({
               No promotions match this filter.
             </EmptyState>
           ) : (
-            <table className={s.table}>
-              <thead>
-                <tr>
-                  <th scope="col">Promotion</th>
-                  <th scope="col">Offer</th>
-                  <th scope="col">Dates</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Active</th>
-                  <th scope="col">
-                    <span className="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {promotions.map((promotion) => {
-                  const badge = statusLabels[promotion.status];
-                  return (
-                    <tr key={promotion.id}>
-                      <td className={s.cellMain}>
-                        <div className={s.itemTitle}>
-                          <span className={s.thumbStack} aria-hidden="true">
-                            {promotion.products.slice(0, 3).map((product) => {
-                              const image = displayableImage(product.image_url);
-                              return (
-                                <span key={product.id} className={s.thumb}>
-                                  {image ? (
-                                    <Image
-                                      src={image}
-                                      alt=""
-                                      fill
-                                      sizes="44px"
-                                    />
-                                  ) : (
-                                    <Coffee size={18} />
-                                  )}
-                                </span>
-                              );
-                            })}
-                          </span>
-                          <div>
-                            <Link href={`/admin/promotions/${promotion.id}`}>
-                              <strong>{promotion.title}</strong>
-                            </Link>
-                            <span>
-                              {promotion.products
-                                .map((product) => product.name)
-                                .join(promotion.bundle ? " + " : ", ")}
+            <>
+              <table className={s.table}>
+                <thead>
+                  <tr>
+                    <th scope="col">Promotion</th>
+                    <th scope="col">Offer</th>
+                    <th scope="col">Dates</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Active</th>
+                    <th scope="col">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginate(promotions, params.page).items.map((promotion) => {
+                    const badge = statusLabels[promotion.status];
+                    return (
+                      <tr key={promotion.id}>
+                        <td className={s.cellMain}>
+                          <div className={s.itemTitle}>
+                            <span className={s.thumbStack} aria-hidden="true">
+                              {promotion.products.slice(0, 3).map((product) => {
+                                const image = displayableImage(
+                                  product.image_url,
+                                );
+                                return (
+                                  <span key={product.id} className={s.thumb}>
+                                    {image ? (
+                                      <Image
+                                        src={image}
+                                        alt=""
+                                        fill
+                                        sizes="44px"
+                                      />
+                                    ) : (
+                                      <Coffee size={18} />
+                                    )}
+                                  </span>
+                                );
+                              })}
                             </span>
+                            <div>
+                              <Link href={`/admin/promotions/${promotion.id}`}>
+                                <strong>{promotion.title}</strong>
+                              </Link>
+                              <span>
+                                {promotion.products
+                                  .map((product) => product.name)
+                                  .join(promotion.bundle ? " + " : ", ")}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td data-label="Offer">
-                        <span className={s.itemTitle} style={{ gap: 8 }}>
-                          <span className={`${s.pill} ${s.pillOn}`}>
-                            {promotion.label}
+                        </td>
+                        <td data-label="Offer">
+                          <span className={s.itemTitle} style={{ gap: 8 }}>
+                            <span className={`${s.pill} ${s.pillOn}`}>
+                              {promotion.label}
+                            </span>
+                            {promotion.products.length === 1 ||
+                            promotion.bundle ? (
+                              <span className={s.price}>
+                                {money(promotion.totals.offer)}{" "}
+                                <s className={s.muted}>
+                                  {money(promotion.totals.regular)}
+                                </s>
+                              </span>
+                            ) : (
+                              <span className={s.muted}>
+                                on {promotion.products.length} products
+                              </span>
+                            )}
                           </span>
-                          {promotion.products.length === 1 ||
-                          promotion.bundle ? (
-                            <span className={s.price}>
-                              {money(promotion.totals.offer)}{" "}
-                              <s className={s.muted}>
-                                {money(promotion.totals.regular)}
-                              </s>
-                            </span>
-                          ) : (
-                            <span className={s.muted}>
-                              on {promotion.products.length} products
-                            </span>
-                          )}
-                        </span>
-                      </td>
-                      <td data-label="Dates">
-                        {promotion.ends_on
-                          ? `${shortDate(promotion.starts_on)} – ${shortDate(promotion.ends_on)}`
-                          : `From ${shortDate(promotion.starts_on)}`}
-                      </td>
-                      <td data-label="Status">
-                        <span className={`${s.pill} ${badge.className}`}>
-                          {badge.text}
-                        </span>
-                      </td>
-                      <td data-label="Active">
-                        <ToggleSwitch
-                          action={togglePromotion}
-                          id={promotion.id}
-                          field="is_active"
-                          checked={promotion.is_active}
-                          label={`Activate ${promotion.title}`}
-                        />
-                      </td>
-                      <td className={s.cellActions}>
-                        <div className={s.actions}>
-                          <Link
-                            href={`/admin/promotions/${promotion.id}`}
-                            className={s.iconButton}
-                            aria-label={`Edit ${promotion.title}`}
-                          >
-                            <Pencil size={17} />
-                          </Link>
-                          <DeleteButton
-                            action={deletePromotion}
+                        </td>
+                        <td data-label="Dates">
+                          {promotion.ends_on
+                            ? `${shortDate(promotion.starts_on)} – ${shortDate(promotion.ends_on)}`
+                            : `From ${shortDate(promotion.starts_on)}`}
+                        </td>
+                        <td data-label="Status">
+                          <span className={`${s.pill} ${badge.className}`}>
+                            {badge.text}
+                          </span>
+                        </td>
+                        <td data-label="Active">
+                          <ToggleSwitch
+                            action={togglePromotion}
                             id={promotion.id}
-                            name={promotion.title}
-                            what="promotion"
-                            consequence="It disappears from the homepage. The products stay on the menu."
+                            field="is_active"
+                            checked={promotion.is_active}
+                            label={`Activate ${promotion.title}`}
                           />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td className={s.cellActions}>
+                          <div className={s.actions}>
+                            <Link
+                              href={`/admin/promotions/${promotion.id}`}
+                              className={s.iconButton}
+                              aria-label={`Edit ${promotion.title}`}
+                            >
+                              <Pencil size={17} />
+                            </Link>
+                            <DeleteButton
+                              action={deletePromotion}
+                              id={promotion.id}
+                              name={promotion.title}
+                              what="promotion"
+                              consequence="It disappears from the homepage. The products stay on the menu."
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <Pagination
+                pagination={paginate(promotions, params.page)}
+                pathname="/admin/promotions"
+                searchParams={params}
+              />
+            </>
           )}
         </>
       )}
