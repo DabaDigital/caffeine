@@ -67,32 +67,41 @@ export function Story({
         const photos = Array.from(
           rail.querySelectorAll<HTMLElement>("[data-card]"),
         );
+        const pictures = photos.map((photo) => photo.querySelector("img")!);
+        // Room for each photo to drift inside its frame.
+        gsap.set(pictures, { scale: 1.15 });
         const position = { value: 0 };
         const render = () => {
           const first = photos[0];
           if (!first) return;
-          const step =
-            first.offsetWidth + (parseFloat(getComputedStyle(rail).gap) || 0);
+          const width = first.offsetWidth;
+          const step = width + (parseFloat(getComputedStyle(rail).gap) || 0);
+          // Neighbours lean in until a sliver shows at the screen's edge.
+          const lean = Math.max(
+            0,
+            step - (runway.clientWidth + width * 0.86) / 2 + 14,
+          );
           gsap.set(rail, {
-            x:
-              (runway.clientWidth - first.offsetWidth) / 2 -
-              position.value * step,
+            x: (runway.clientWidth - width) / 2 - position.value * step,
           });
           photos.forEach((photo, index) => {
-            const distance = Math.min(1, Math.abs(index - position.value));
+            const offset = gsap.utils.clamp(-1, 1, index - position.value);
             // A cosine falloff eases into and out of the centered size.
-            const emphasis = (1 + Math.cos(distance * Math.PI)) / 2;
+            const emphasis = (1 + Math.cos(offset * Math.PI)) / 2;
             gsap.set(photo, {
+              x: -offset * lean,
               scale: 0.86 + emphasis * 0.14,
-              rotation: (index < position.value ? -1 : 1) * (1 - emphasis) * 2,
+              rotation: Math.sign(offset) * (1 - emphasis) * 2,
               opacity: 0.9 + emphasis * 0.1,
             });
+            // The photo trails the card a little, like a view through glass.
+            gsap.set(pictures[index], { xPercent: -offset * 6 });
           });
         };
         render();
-        gsap.to(position, {
-          value: photos.length - 1,
-          ease: "none",
+        // Each photo rests at the centre before the next glides in.
+        const glide = gsap.timeline({
+          defaults: { duration: 1, ease: "power2.inOut" },
           onUpdate: render,
           scrollTrigger: {
             trigger: runway,
@@ -100,14 +109,19 @@ export function Story({
             end: () =>
               `bottom top+=${78 + runway.firstElementChild!.clientHeight}`,
             scrub: 0.8,
-            invalidateOnRefresh: true,
             onRefresh: render,
           },
         });
+        for (let index = 1; index < photos.length; index++) {
+          glide.to(position, { value: index }, index === 1 ? 0.15 : "+=0.4");
+        }
+        glide.to({}, { duration: 0.15 });
         ScrollTrigger.refresh();
         return () => {
           delete runway.dataset.horizontal;
-          gsap.set([rail, ...photos], { clearProps: "transform,opacity" });
+          gsap.set([rail, ...photos, ...pictures], {
+            clearProps: "transform,opacity",
+          });
         };
       },
     );
@@ -285,13 +299,15 @@ export function Story({
                 tabIndex={0}
                 aria-label="Photos from our café"
               >
+                {/* On phones these wide photos fill a tall polaroid by its
+                    height, so they draw about 1.5× the screen height across. */}
                 {cards.map((card) => (
                   <li key={card.src} className={s.card} data-card>
                     <ShimmerImage
                       src={card.src}
                       alt={card.alt}
                       fill
-                      sizes="(max-width: 899px) 70vw, 22vw"
+                      sizes="(max-width: 899px) 150vh, 22vw"
                       quality={85}
                       className={s.cardPhoto}
                     />

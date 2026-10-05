@@ -48,10 +48,24 @@ export function MotionRoot({ children }: { children: ReactNode }) {
       const lenis = new Lenis({
         anchors: { offset: -96 },
         smoothWheel: true,
-        syncTouch: false,
+        // Touch goes through Lenis too: phones get the same eased momentum,
+        // and the pinned scenes move in step with the finger.
+        syncTouch: true,
         allowNestedScroll: true,
         stopInertiaOnNavigate: true,
         prevent: (element) => !!element.closest("dialog, [data-lenis-prevent]"),
+        // Over a row that page scroll slides sideways ([data-horizontal]), a
+        // sideways swipe scrolls the page, so the row follows the gesture
+        // instead of ignoring it (or the browser going back a page).
+        virtualScroll: (data) => {
+          if (
+            Math.abs(data.deltaX) > Math.abs(data.deltaY) &&
+            data.event.target instanceof Element &&
+            data.event.target.closest("[data-horizontal]")
+          )
+            data.deltaY = data.deltaX;
+          return true;
+        },
       });
       scroller.current = lenis;
       lenis.on("scroll", ScrollTrigger.update);

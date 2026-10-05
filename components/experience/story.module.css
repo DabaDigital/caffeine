@@ -144,6 +144,8 @@
     padding-top: 0;
   }
   .gallery[data-horizontal] {
+    /* Dark room left around the centred polaroid, below the 78px header. */
+    --frame: 28px;
     height: 220svh;
     margin-inline: -22px;
   }
@@ -165,25 +167,36 @@
     scroll-snap-type: none;
     will-change: transform;
   }
+  /* The centred card fills the stage inside the frame. Wider screens keep a
+     polaroid's tall proportions instead of stretching. */
   .gallery[data-horizontal] .card {
-    flex: 0 0 min(64vw, 320px, 43svh);
-    height: min(74svh, 660px);
-    max-height: calc(100svh - 126px);
+    flex: 0 0
+      min(
+        100% - 2 * var(--frame),
+        (100svh - 78px - 2 * var(--frame)) * 0.62,
+        560px
+      );
+    height: calc(100svh - 78px - 2 * var(--frame));
     display: flex;
     flex-direction: column;
-    padding: 10px 10px 22px;
+    padding: 12px 12px 20px;
     border-radius: 2px;
     transform-origin: center;
     will-change: transform;
+    /* The caption scales with the card, and long words can't widen it. */
+    container-type: inline-size;
   }
   .gallery[data-horizontal] .cardPhoto {
     flex: 1;
     min-height: 0;
     aspect-ratio: auto;
   }
+  .gallery[data-horizontal] .cardPhoto img {
+    will-change: transform;
+  }
   .gallery[data-horizontal] .card p {
     flex: none;
-    font-size: clamp(21px, 5.8vw, 26px);
+    font-size: clamp(17px, 8cqi, 36px);
     min-height: 2.2em;
   }
 }

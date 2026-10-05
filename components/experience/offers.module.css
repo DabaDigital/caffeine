@@ -10,6 +10,8 @@
   --pager-line: #17141138;
   --pager-active: var(--coffee);
   --pager-active-ink: var(--milk);
+  /* The fixed site header the scroll-driven stage sticks under. */
+  --header: 78px;
   padding: 72px 22px 88px;
   color: var(--coffee);
   background: var(--milk);
@@ -354,6 +356,7 @@
   height: 100%;
   border-radius: inherit;
   background: var(--brand-gold-deep);
+  transform: translateX(calc(var(--page, 0) * 100%));
   transition: transform 240ms var(--ease-out);
 }
 .progress input {
@@ -414,6 +417,7 @@
 
 @media (min-width: 900px) {
   .offers {
+    --header: 96px;
     padding: 115px 5% 110px;
   }
   .heading {
@@ -444,4 +448,43 @@
   .ticket:hover .stub {
     transform: rotate(4deg) translateX(3px);
   }
+}
+
+/* Scroll-driven ------------------------------------------------------------
+   With motion on, [data-horizontal] fills the screen under the header with
+   the heading and tickets, and holds them there while page scroll glides the
+   row past. The runway grows by the scroll the pass takes (--hold). */
+
+.offers:has(> [data-horizontal]) {
+  padding-top: 0;
+  overflow-x: clip;
+}
+.runway[data-horizontal]::after {
+  content: "";
+  display: block;
+  height: var(--hold, 0px);
+}
+.runway[data-horizontal] .inner {
+  position: sticky;
+  /* A stage taller than the screen sticks by its bottom edge instead. */
+  top: min(var(--header), 100svh - var(--stage-height, 0px));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100svh - var(--header));
+  padding-block: 16px;
+}
+/* Tickets slide out past the screen's edge rather than a scroll box's. */
+.runway[data-horizontal] .track {
+  overflow: visible;
+}
+.runway[data-horizontal] .list {
+  will-change: transform;
+}
+/* The thumb moves with the row, which is already smoothed. */
+.runway[data-horizontal] .progressTrack > span {
+  transform: translateX(
+    calc(var(--progress, 0) * (var(--pages, 1) - 1) * 100%)
+  );
+  transition: none;
 }

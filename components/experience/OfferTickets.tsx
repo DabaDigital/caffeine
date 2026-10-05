@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { Coffee } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -35,46 +43,130 @@ function ending(until: string | null, today: string | null) {
   return { text: `Until ${shortDate(until)}`, soon: false };
 }
 
+/** Scroll held before the first glide and after the last, and between
+ *  glides, in ticket widths. */
+const EDGE = 0.15;
+const REST = 0.4;
+
 /**
- * Offers as tear-off tickets in a sideways carousel. They print out of a
- * slot as the section arrives and tilt under the pointer.
+ * A scroll-driven pass along the row: it glides one ticket at a time and
+ * rests at each, so every ticket holds still, aligned, for a stretch of
+ * scroll. Times are in ticket widths of scroll, offsets in px.
  */
-export function OfferTickets({ offers }: { offers: SiteOffer[] }) {
+type Pass = {
+  glides: { from: number; to: number; start: number; end: number }[];
+  length: number;
+};
+
+function planPass(step: number, travel: number): Pass {
+  const glides: Pass["glides"] = [];
+  if (step <= 0) return { glides, length: 0 };
+  let time = EDGE;
+  for (let from = 0; from < travel - 1; from += step) {
+    const to = Math.min(travel, from + step);
+    const duration = (to - from) / step;
+    glides.push({ from, to, start: time, end: time + duration });
+    time += duration + REST;
+  }
+  return { glides, length: glides.length ? time - REST + EDGE : 0 };
+}
+
+/** How far the row has slid at a scroll progress (0–1) through the pass. */
+function offsetAt({ glides, length }: Pass, progress: number) {
+  const time = progress * length;
+  const ease = gsap.parseEase("power2.inOut");
+  let offset = 0;
+  for (const { from, to, start, end } of glides) {
+    if (time <= start) break;
+    offset =
+      time >= end
+        ? to
+        : from + (to - from) * ease((time - start) / (end - start));
+  }
+  return offset;
+}
+
+/** The scroll progress at which the row rests on a ticket (0 is the first). */
+function restAt({ glides, length }: Pass, stop: number) {
+  if (!length) return 0;
+  const index = Math.max(0, Math.min(glides.length, stop));
+  const time =
+    index === 0
+      ? EDGE / 2
+      : index === glides.length
+        ? length - EDGE / 2
+        : glides[index - 1].end + REST / 2;
+  return time / length;
+}
+
+/**
+ * Offers as tear-off tickets in a sideways row. They print out of a slot as
+ * the section arrives and tilt under the pointer. With motion on, the heading
+ * and tickets hold still under the header while scrolling the page glides
+ * the row along; otherwise the row scrolls sideways on its own.
+ */
+export function OfferTickets({
+  offers,
+  children,
+}: {
+  offers: SiteOffer[];
+  /** The section heading, held in view with the tickets. */
+  children: ReactNode;
+}) {
   const today = useCafeToday();
-  const { paused } = useSiteMotion();
+  const { paused, scrollTo } = useSiteMotion();
+  const runway = useRef<HTMLDivElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
+  const meter = useRef<HTMLSpanElement>(null);
+  /** Set while page scroll drives the row instead of its own scrollbar. */
+  const rail = useRef<{
+    trigger: ScrollTrigger;
+    pass: Pass;
+    travel: number;
+  } | null>(null);
   const [view, setView] = useState({ page: 0, count: 1, step: 0, perView: 1 });
+  const [scrollDriven, setScrollDriven] = useState(false);
 
   // Pages follow how many tickets fit; the current page follows the scroll.
-  useEffect(() => {
+  const measure = useCallback(() => {
     const element = track.current;
     const list = element?.firstElementChild;
-    if (!element || !list) return;
-    const measure = () => {
-      const first = list.firstElementChild as HTMLElement | null;
-      if (!first) return;
-      const gap = parseFloat(getComputedStyle(list).columnGap) || 0;
-      const step = first.offsetWidth + gap;
-      const perView = Math.max(
-        1,
-        Math.floor((element.clientWidth + gap + 2) / step),
-      );
-      const count = Math.max(1, Math.ceil(offers.length / perView));
-      const page = Math.min(
-        count - 1,
-        element.scrollLeft >= element.scrollWidth - element.clientWidth - 2
-          ? count - 1
-          : Math.round(element.scrollLeft / (step * perView)),
-      );
-      setView((old) =>
-        old.page === page &&
-        old.count === count &&
-        old.step === step &&
-        old.perView === perView
-          ? old
-          : { page, count, step, perView },
-      );
-    };
+    const first = list?.firstElementChild as HTMLElement | null | undefined;
+    if (!element || !list || !first) return;
+    const gap = parseFloat(getComputedStyle(list).columnGap) || 0;
+    const step = first.offsetWidth + gap;
+    const perView = Math.max(
+      1,
+      Math.floor((element.clientWidth + gap + 2) / step),
+    );
+    const count = Math.max(1, Math.ceil(offers.length / perView));
+    // Scroll-driven, the target scroll position decides, not where the
+    // smoothed row happens to be, so the slider never fights a drag.
+    const driven = rail.current;
+    const offset = driven
+      ? offsetAt(driven.pass, driven.trigger.progress)
+      : element.scrollLeft;
+    const end = driven
+      ? driven.travel
+      : element.scrollWidth - element.clientWidth;
+    const page = Math.min(
+      count - 1,
+      offset >= end - 2 ? count - 1 : Math.round(offset / (step * perView)),
+    );
+    setView((old) =>
+      old.page === page &&
+      old.count === count &&
+      old.step === step &&
+      old.perView === perView
+        ? old
+        : { page, count, step, perView },
+    );
+  }, [offers.length]);
+
+  useEffect(() => {
+    const element = track.current;
+    if (!element) return;
     measure();
     element.addEventListener("scroll", measure, { passive: true });
     const observer = new ResizeObserver(measure);
@@ -83,9 +175,26 @@ export function OfferTickets({ offers }: { offers: SiteOffer[] }) {
       element.removeEventListener("scroll", measure);
       observer.disconnect();
     };
-  }, [offers.length]);
+  }, [measure]);
+
+  // The controls appear after measuring and make the section taller, which
+  // moves every scroll scene below it.
+  const hasControls = view.count > 1;
+  useEffect(() => {
+    if (hasControls) ScrollTrigger.refresh();
+  }, [hasControls]);
 
   function goPage(page: number, immediate = false) {
+    const driven = rail.current;
+    // Scroll-driven, go to the page scroll at which the row rests there.
+    if (driven?.pass.length) {
+      const { start, end } = driven.trigger;
+      scrollTo(
+        start + (end - start) * restAt(driven.pass, page * view.perView),
+        immediate,
+      );
+      return;
+    }
     track.current?.scrollTo({
       left: page * view.perView * view.step,
       behavior:
@@ -160,68 +269,192 @@ export function OfferTickets({ offers }: { offers: SiteOffer[] }) {
     return () => media.revert();
   }, [paused, offers.length]);
 
+  // With motion on, the heading and tickets hold still under the header for
+  // as long as the row takes to glide past: Lenis smooths the page scroll and
+  // GSAP scrubs it into the pass. Phones and desktops alike, given the height.
+  useEffect(() => {
+    const frame = runway.current;
+    const held = stage.current;
+    const element = track.current;
+    const list = element?.firstElementChild;
+    if (!frame || !held || !element || !(list instanceof HTMLElement) || paused)
+      return;
+    gsap.registerPlugin(ScrollTrigger);
+    const media = gsap.matchMedia();
+    media.add(
+      {
+        motion:
+          "(prefers-reduced-motion: no-preference) and (min-height: 560px)",
+        // Re-planned whenever a different number of tickets fits.
+        narrow: "(max-width: 599px)",
+        wide: "(min-width: 900px)",
+      },
+      (context) => {
+        if (!context.conditions?.motion) return;
+        // How far the row reaches past the space it shows in.
+        const overhang = () => {
+          const first = list.firstElementChild as HTMLElement | null;
+          const last = list.lastElementChild as HTMLElement | null;
+          if (!first || !last) return 0;
+          const box = getComputedStyle(element);
+          const visible =
+            element.clientWidth -
+            parseFloat(box.paddingLeft) -
+            parseFloat(box.paddingRight);
+          return Math.max(
+            0,
+            Math.round(
+              last.offsetLeft + last.offsetWidth - first.offsetLeft - visible,
+            ),
+          );
+        };
+        // Every ticket already fits: nothing to slide.
+        if (!overhang()) return;
+
+        const slide = gsap.quickSetter(list, "x", "px");
+        const position = { value: 0 };
+        let travel = 0;
+        let pass = planPass(0, 0);
+        let hold = 0;
+        // Before every measure: the overhang sets how long the section holds,
+        // and how tall the stage is decides where it sticks.
+        const layout = () => {
+          const first = list.firstElementChild as HTMLElement | null;
+          const step = first
+            ? first.offsetWidth +
+              (parseFloat(getComputedStyle(list).columnGap) || 0)
+            : 0;
+          travel = overhang();
+          pass = planPass(step, travel);
+          hold = Math.round(pass.length * step);
+          frame.style.setProperty("--hold", `${hold}px`);
+          frame.style.setProperty("--stage-height", `${held.offsetHeight}px`);
+          if (rail.current) Object.assign(rail.current, { pass, travel });
+        };
+        const render = () => {
+          const offset = offsetAt(pass, position.value);
+          slide(-offset);
+          meter.current?.style.setProperty(
+            "--progress",
+            String(travel ? offset / travel : 0),
+          );
+        };
+
+        frame.dataset.horizontal = "on";
+        element.scrollLeft = 0;
+        layout();
+        const tween = gsap.to(position, {
+          value: 1,
+          ease: "none",
+          onUpdate: render,
+          scrollTrigger: {
+            trigger: frame,
+            // Where the stage sticks: under the header, or higher when it is
+            // taller than the screen and sticks by its bottom edge instead.
+            start: () => `top ${parseFloat(getComputedStyle(held).top) || 0}px`,
+            end: () => `+=${hold}`,
+            scrub: 0.8,
+            onUpdate: measure,
+            onRefresh: render,
+          },
+        });
+        rail.current = { trigger: tween.scrollTrigger!, pass, travel };
+        ScrollTrigger.addEventListener("refreshInit", layout);
+        setScrollDriven(true);
+        ScrollTrigger.refresh();
+        measure();
+        return () => {
+          ScrollTrigger.removeEventListener("refreshInit", layout);
+          rail.current = null;
+          delete frame.dataset.horizontal;
+          frame.style.removeProperty("--hold");
+          frame.style.removeProperty("--stage-height");
+          gsap.set(list, { clearProps: "transform" });
+          setScrollDriven(false);
+          measure();
+        };
+      },
+    );
+    return () => media.revert();
+  }, [paused, measure]);
+
   return (
-    <div className={s.carousel}>
-      <div className={s.printer} aria-hidden="true">
-        <span />
-      </div>
-      <div
-        ref={track}
-        className={s.track}
-        role="region"
-        aria-label="Offers"
-        tabIndex={0}
-        onKeyDown={(event) => {
-          const page =
-            event.key === "ArrowRight"
-              ? view.page + 1
-              : event.key === "ArrowLeft"
-                ? view.page - 1
-                : event.key === "Home"
-                  ? 0
-                  : event.key === "End"
-                    ? view.count - 1
-                    : null;
-          if (page === null) return;
-          event.preventDefault();
-          goPage(Math.max(0, Math.min(view.count - 1, page)), true);
-        }}
-      >
-        <ul className={s.list}>
-          {offers.map((offer, index) => (
-            <Ticket
-              key={offer.id}
-              offer={offer}
-              serial={index + 1}
-              ending={ending(offer.until, today)}
-            />
-          ))}
-        </ul>
-      </div>
-      {view.count > 1 && (
-        <div className={s.controls}>
-          <p className={s.count}>Swipe to discover · {offers.length} offers</p>
-          <div className={s.progress}>
-            <span className={s.progressTrack} aria-hidden="true">
-              <span
-                style={{
-                  width: `${100 / view.count}%`,
-                  transform: `translateX(${view.page * 100}%)`,
-                }}
-              />
-            </span>
-            <input
-              type="range"
-              min={0}
-              max={view.count - 1}
-              value={view.page}
-              aria-label="Browse offers"
-              aria-valuetext={`Offer page ${view.page + 1} of ${view.count}`}
-              onChange={(event) => goPage(Number(event.target.value), true)}
-            />
+    <div ref={runway} className={s.runway}>
+      <div ref={stage} className={s.inner}>
+        {children}
+        <div className={s.carousel}>
+          <div className={s.printer} aria-hidden="true">
+            <span />
           </div>
+          <div
+            ref={track}
+            className={s.track}
+            role="region"
+            aria-label="Offers"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              const page =
+                event.key === "ArrowRight"
+                  ? view.page + 1
+                  : event.key === "ArrowLeft"
+                    ? view.page - 1
+                    : event.key === "Home"
+                      ? 0
+                      : event.key === "End"
+                        ? view.count - 1
+                        : null;
+              if (page === null) return;
+              event.preventDefault();
+              goPage(Math.max(0, Math.min(view.count - 1, page)), true);
+            }}
+          >
+            <ul className={s.list}>
+              {offers.map((offer, index) => (
+                <Ticket
+                  key={offer.id}
+                  offer={offer}
+                  serial={index + 1}
+                  ending={ending(offer.until, today)}
+                />
+              ))}
+            </ul>
+          </div>
+          {view.count > 1 && (
+            <div className={s.controls}>
+              <p className={s.count}>
+                {scrollDriven ? "Scroll" : "Swipe"} to discover ·{" "}
+                {offers.length} offers
+              </p>
+              <div className={s.progress}>
+                <span
+                  ref={meter}
+                  className={s.progressTrack}
+                  aria-hidden="true"
+                >
+                  <span
+                    style={
+                      {
+                        width: `${100 / view.count}%`,
+                        "--page": view.page,
+                        "--pages": view.count,
+                      } as CSSProperties
+                    }
+                  />
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={view.count - 1}
+                  value={view.page}
+                  aria-label="Browse offers"
+                  aria-valuetext={`Offer page ${view.page + 1} of ${view.count}`}
+                  onChange={(event) => goPage(Number(event.target.value), true)}
+                />
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

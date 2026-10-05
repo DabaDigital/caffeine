@@ -12,7 +12,7 @@ export function Offers({
 }) {
   return (
     <section id="offers" className={s.offers} aria-labelledby="offers-title">
-      <div className={s.inner}>
+      <OfferTickets offers={offers}>
         <header className={s.heading} data-reveal>
           <div>
             <p className={s.eyebrow}>{number} — EXCLUSIVE OFFERS</p>
@@ -26,8 +26,7 @@ export function Offers({
             Just ask at the counter.
           </p>
         </header>
-        <OfferTickets offers={offers} />
-      </div>
+      </OfferTickets>
     </section>
   );
 }
