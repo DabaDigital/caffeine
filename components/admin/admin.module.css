@@ -1569,7 +1569,9 @@
 .tabs a[aria-current="page"] .tabCount {
   background: #f7f0e326;
 }
-.tabs .tabCountAlert {
+/* Gold while reviews wait, on the selected tab too. */
+.tabs .tabCountAlert,
+.tabs a[aria-current="page"] .tabCountAlert {
   background: var(--accent);
   color: var(--brand-black);
 }
@@ -1595,11 +1597,14 @@
   font-size: 13px;
   color: var(--muted);
 }
+/* On phones the two buttons share a row of their own. */
 .bulkActions {
   display: flex;
-  flex-wrap: wrap;
+  flex: 1 1 100%;
   gap: 8px;
-  margin-left: auto;
+}
+.bulkActions > button {
+  flex: 1;
 }
 .check {
   flex: none;
@@ -1699,16 +1704,30 @@
   .decisionPanel {
     padding: 24px 26px;
   }
+  .bulkActions {
+    flex: none;
+    margin-left: auto;
+  }
+  .bulkActions > button {
+    flex: none;
+  }
 }
 @media (min-width: 760px) {
   .table tr[data-selected] td {
-    background: color-mix(in srgb, var(--accent) 10%, var(--card));
+    background: color-mix(in srgb, var(--accent) 16%, var(--card));
   }
 }
 @media (min-width: 960px) {
   /* Centred on the content, beside the sidebar. */
   .toast {
     left: calc(50% + 132px);
+  }
+}
+/* With room to spare, Decline and Approve sit side by side, keeping rows
+   short; narrower tables let them stack instead of overflowing. */
+@media (min-width: 1100px) {
+  .rowDecision {
+    flex-wrap: nowrap;
   }
 }
 @media (hover: hover) and (pointer: fine) {
