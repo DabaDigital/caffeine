@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   googlePlaceSchema,
@@ -8,6 +9,7 @@ import {
 } from "@/lib/google-reviews";
 import { ArrowUpRight, Star } from "lucide-react";
 import type { ReviewStats, SiteReview } from "@/lib/content";
+import { useSiteMotion } from "./Motion";
 import { ReviewWall } from "./ReviewWall";
 import { ReviewText } from "./ReviewText";
 import x from "./experience.module.css";
@@ -56,6 +58,8 @@ export function Reviews({
   /** Shown only with a verified Google Maps link, never a search. */
   location: { name: string; mapUrl: string } | null;
 }) {
+  const section = useRef<HTMLElement>(null);
+  const { paused } = useSiteMotion();
   const [google, setGoogle] = useState<GooglePlaceReviews | null>(null);
   useEffect(() => {
     const controller = new AbortController();
@@ -101,8 +105,101 @@ export function Reviews({
   const featured = guestReviews.length ? pickFeatured(guestReviews) : null;
   const others = guestReviews.filter((review) => review !== featured);
 
+  // The featured quote arrives as if written: its rule draws down, the words
+  // ink in and its stars fill, while the big quotation mark drifts behind.
+  // The summary's stars fill beside the counting score.
+  useEffect(() => {
+    const root = section.current;
+    if (!root || paused) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const media = gsap.matchMedia();
+    media.add("(prefers-reduced-motion: no-preference)", () => {
+      const quote = root.querySelector<HTMLElement>("[data-featured]");
+      if (quote) {
+        const mark = quote.querySelector("[data-mark]");
+        gsap
+          .timeline({
+            scrollTrigger: { trigger: quote, start: "top 85%", once: true },
+          })
+          .fromTo(
+            quote.querySelector("[data-rule]"),
+            { scaleY: 0 },
+            { scaleY: 1, duration: 1.2, ease: "power3.inOut" },
+            0,
+          )
+          .fromTo(
+            mark,
+            { opacity: 0, scale: 0.7, rotation: -10 },
+            {
+              opacity: 1,
+              scale: 1,
+              rotation: 0,
+              duration: 1.3,
+              ease: "power3.out",
+            },
+            0.1,
+          )
+          .fromTo(
+            quote.querySelector("blockquote"),
+            { "--ink": 0 },
+            {
+              "--ink": 1,
+              duration: 1.5,
+              ease: "power2.out",
+              clearProps: "--ink",
+            },
+            0.2,
+          )
+          .fromTo(
+            quote.querySelectorAll("[data-star-fill]"),
+            { "--fill": 0 },
+            {
+              "--fill": 1,
+              duration: 0.9,
+              ease: "power2.inOut",
+              clearProps: "--fill",
+            },
+            0.75,
+          );
+        gsap.fromTo(
+          mark,
+          { yPercent: -12 },
+          {
+            yPercent: 12,
+            ease: "none",
+            scrollTrigger: {
+              trigger: quote,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          },
+        );
+      }
+      const summary = root.querySelector<HTMLElement>("[data-summary]");
+      if (summary)
+        gsap.fromTo(
+          summary.querySelectorAll("[data-star-fill]"),
+          { "--fill": 0 },
+          {
+            "--fill": 1,
+            duration: 1.4,
+            ease: "power3.out",
+            clearProps: "--fill",
+            scrollTrigger: { trigger: summary, start: "top 90%", once: true },
+          },
+        );
+    });
+    return () => media.revert();
+  }, [paused]);
+
   return (
-    <section id="reviews" className={s.reviews} aria-labelledby="reviews-title">
+    <section
+      ref={section}
+      id="reviews"
+      className={s.reviews}
+      aria-labelledby="reviews-title"
+    >
       <div className={s.aside}>
         <div data-reveal>
           <p className={x.eyebrow}>{number} — KIND WORDS</p>
@@ -114,14 +211,14 @@ export function Reviews({
           <p className={s.intro}>Little moments, in our guests’ own words.</p>
         </div>
         {stats && (
-          <div className={s.summary} data-reveal data-grow>
+          <div className={s.summary} data-reveal data-summary>
             {google && (
               <p className={s.googleAttribution} translate="no">
                 Google Maps
               </p>
             )}
             <p className={s.score}>
-              <strong>{stats.average.toFixed(1)}</strong>
+              <Score value={stats.average} />
               <span className={s.scoreMeta}>
                 <Stars value={stats.average} size={16} />
                 <span>
@@ -138,8 +235,11 @@ export function Reviews({
                   Rating breakdown <span aria-hidden="true">+</span>
                 </summary>
                 <ul className={s.breakdown} aria-label="Reviews by rating">
-                  {stats.breakdown.map((row) => (
-                    <li key={row.stars}>
+                  {stats.breakdown.map((row, index) => (
+                    <li
+                      key={row.stars}
+                      style={{ "--row": index } as CSSProperties}
+                    >
                       <span className={s.breakdownLabel}>
                         {row.stars}
                         <Star size={11} aria-hidden="true" />
@@ -147,7 +247,6 @@ export function Reviews({
                       </span>
                       <span className={s.bar} aria-hidden="true">
                         <span
-                          data-grow-bar
                           style={
                             {
                               "--share": stats.count
@@ -194,7 +293,11 @@ export function Reviews({
           )}
           {featured ? (
             <>
-              <figure className={s.featured} data-reveal>
+              <figure className={s.featured} data-reveal data-featured>
+                <span className={s.featuredRule} data-rule aria-hidden="true" />
+                <span className={s.featuredMark} data-mark aria-hidden="true">
+                  “
+                </span>
                 <p className={s.featuredLabel}>A MOMENT WORTH SHARING</p>
                 <ReviewText text={featured.comment} author={featured.author} />
                 <figcaption>
@@ -217,7 +320,7 @@ export function Reviews({
                 </figcaption>
               </figure>
               {others.length > 0 && (
-                <ReviewWall>
+                <ReviewWall filler={<YourTurn location={location} />}>
                   {others.map((review) => (
                     <ReviewCard key={review.id} review={review} />
                   ))}
@@ -274,8 +377,11 @@ export function Reviews({
 function ReviewCard({ review }: { review: SiteReview }) {
   const meta = details(review);
   return (
-    <li className={s.card}>
-      <figure>
+    <li className={s.card} data-card>
+      <figure className={s.cardBox}>
+        <span className={s.cardMark} aria-hidden="true">
+          “
+        </span>
         <p className={s.cardRating}>
           <Stars value={review.rating} size={13} />
           <span className="sr-only">{review.rating} out of 5 stars</span>
@@ -306,6 +412,72 @@ function ReviewCard({ review }: { review: SiteReview }) {
         </figcaption>
       </figure>
     </li>
+  );
+}
+
+/** Ends a short last page: the next kind words could be theirs. */
+function YourTurn({
+  location,
+}: {
+  location: { name: string; mapUrl: string } | null;
+}) {
+  return (
+    <li className={s.card} data-card>
+      <div className={`${s.cardBox} ${s.yourTurn}`}>
+        <span className={s.cardMark} aria-hidden="true">
+          “
+        </span>
+        <p className={s.yourTurnLabel}>Your moment</p>
+        <p className={s.yourTurnTitle}>
+          How was your <em>little coffee break?</em>
+        </p>
+        {location ? (
+          <MapLink location={location} />
+        ) : (
+          <p className={s.yourTurnNote}>
+            Tell our team about your visit next time you stop by.
+          </p>
+        )}
+      </div>
+    </li>
+  );
+}
+
+/** The average, counting up from zero the first time it scrolls into view. */
+function Score({ value }: { value: number }) {
+  const number = useRef<HTMLElement>(null);
+  const { paused } = useSiteMotion();
+  useEffect(() => {
+    const element = number.current;
+    const text = element?.firstChild;
+    if (!element || !text || paused) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const media = gsap.matchMedia();
+    media.add("(prefers-reduced-motion: no-preference)", () => {
+      const shown = { value: 0 };
+      // Writes the text node React rendered, so its own updates still land.
+      const render = () => {
+        text.nodeValue = shown.value.toFixed(1);
+      };
+      render();
+      gsap.to(shown, {
+        value,
+        duration: 1.6,
+        ease: "power3.out",
+        onUpdate: render,
+        scrollTrigger: { trigger: element, start: "top 90%", once: true },
+      });
+      return () => {
+        text.nodeValue = value.toFixed(1);
+      };
+    });
+    return () => media.revert();
+  }, [value, paused]);
+  // Screen readers get the average from the sentence beside it.
+  return (
+    <strong ref={number} aria-hidden="true">
+      {value.toFixed(1)}
+    </strong>
   );
 }
 
@@ -351,7 +523,9 @@ function Stars({ value, size }: { value: number; size: number }) {
       aria-hidden="true"
     >
       <span className={s.starRow}>{row}</span>
-      <span className={`${s.starRow} ${s.starFill}`}>{row}</span>
+      <span className={`${s.starRow} ${s.starFill}`} data-star-fill>
+        {row}
+      </span>
     </span>
   );
 }
