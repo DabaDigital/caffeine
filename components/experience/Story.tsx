@@ -47,14 +47,70 @@ export function Story({
   place: string | null;
 }) {
   const root = useRef<HTMLElement>(null);
+  const gallery = useRef<HTMLDivElement>(null);
   const [chapter, setChapter] = useState(0);
-  const { paused } = useSiteMotion();
+  const { paused, scrollTo } = useSiteMotion();
 
   useEffect(() => {
     const section = root.current;
     if (!section || paused) return;
     gsap.registerPlugin(ScrollTrigger);
     const media = gsap.matchMedia();
+    media.add(
+      "(max-width: 899px) and (prefers-reduced-motion: no-preference)",
+      () => {
+        const runway = gallery.current;
+        const rail = runway?.querySelector<HTMLElement>("ul");
+        if (!runway || !rail) return;
+        runway.dataset.horizontal = "on";
+        rail.scrollLeft = 0;
+        const photos = Array.from(
+          rail.querySelectorAll<HTMLElement>("[data-card]"),
+        );
+        const position = { value: 0 };
+        const render = () => {
+          const first = photos[0];
+          if (!first) return;
+          const step =
+            first.offsetWidth + (parseFloat(getComputedStyle(rail).gap) || 0);
+          gsap.set(rail, {
+            x:
+              (runway.clientWidth - first.offsetWidth) / 2 -
+              position.value * step,
+          });
+          photos.forEach((photo, index) => {
+            const distance = Math.min(1, Math.abs(index - position.value));
+            // A cosine falloff eases into and out of the centered size.
+            const emphasis = (1 + Math.cos(distance * Math.PI)) / 2;
+            gsap.set(photo, {
+              scale: 0.86 + emphasis * 0.14,
+              rotation: (index < position.value ? -1 : 1) * (1 - emphasis) * 2,
+              opacity: 0.9 + emphasis * 0.1,
+            });
+          });
+        };
+        render();
+        gsap.to(position, {
+          value: photos.length - 1,
+          ease: "none",
+          onUpdate: render,
+          scrollTrigger: {
+            trigger: runway,
+            start: "top 78px",
+            end: () =>
+              `bottom top+=${78 + runway.firstElementChild!.clientHeight}`,
+            scrub: 0.8,
+            invalidateOnRefresh: true,
+            onRefresh: render,
+          },
+        });
+        ScrollTrigger.refresh();
+        return () => {
+          delete runway.dataset.horizontal;
+          gsap.set([rail, ...photos], { clearProps: "transform,opacity" });
+        };
+      },
+    );
     media.add(
       "(min-width: 900px) and (min-height: 560px) and (prefers-reduced-motion: no-preference)",
       () => {
@@ -111,7 +167,11 @@ export function Story({
             { y: -60, opacity: 0, duration: 0.1 },
             0.66,
           )
-          .to(select("[data-inside-shade]"), { opacity: 0.84, duration: 0.14 }, 0.64)
+          .to(
+            select("[data-inside-shade]"),
+            { opacity: 0.84, duration: 0.14 },
+            0.64,
+          )
           // 3. The ritual: three moments come forward out of the room.
           .fromTo(
             select('[data-chapter="2"]'),
@@ -158,12 +218,7 @@ export function Story({
     if (!section) return;
     const top = section.getBoundingClientRect().top + window.scrollY;
     const length = section.offsetHeight - window.innerHeight;
-    window.scrollTo({
-      top: top + length * marks[index],
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-    });
+    scrollTo(top + length * marks[index]);
   }
 
   return (
@@ -223,21 +278,29 @@ export function Story({
         </div>
 
         <div className={s.chapter} data-chapter="2">
-          <ul className={s.cards}>
-            {cards.map((card) => (
-              <li key={card.src} className={s.card} data-card>
-                <ShimmerImage
-                  src={card.src}
-                  alt={card.alt}
-                  fill
-                  sizes="(max-width: 899px) 70vw, 22vw"
-                  quality={85}
-                  className={s.cardPhoto}
-                />
-                <p>{card.caption}</p>
-              </li>
-            ))}
-          </ul>
+          <div className={s.gallery} ref={gallery}>
+            <div className={s.galleryStage}>
+              <ul
+                className={s.cards}
+                tabIndex={0}
+                aria-label="Photos from our café"
+              >
+                {cards.map((card) => (
+                  <li key={card.src} className={s.card} data-card>
+                    <ShimmerImage
+                      src={card.src}
+                      alt={card.alt}
+                      fill
+                      sizes="(max-width: 899px) 70vw, 22vw"
+                      quality={85}
+                      className={s.cardPhoto}
+                    />
+                    <p>{card.caption}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
           <div className={s.ritual} data-copy>
             <p className={s.lede}>
               In the heart of Maarif, we’re making room for the good things.

@@ -1,14 +1,13 @@
-/* Offers as tear-off tickets on the cream counter. Contrast: muted text on
-   the ticket (#2a211c) 7.4:1, pistachio 9:1; stub ink on pistachio 9.6:1. */
+/* Tear-off tickets on a cream counter, finished with gold stubs. */
 .offers {
-  --ticket: #2a211c;
+  --ticket: var(--brand-surface);
   --ticket-ink: var(--milk);
-  --ticket-muted: #c7b9a8;
-  --stub: var(--pistachio);
-  --stub-ink: #222b17;
-  --skeleton-base: #3b2f28;
+  --ticket-muted: var(--brand-muted);
+  --stub: var(--gold);
+  --stub-ink: var(--brand-black);
+  --skeleton-base: var(--brand-surface);
   --pager-ink: var(--coffee);
-  --pager-line: #28201c38;
+  --pager-line: #17141138;
   --pager-active: var(--coffee);
   --pager-active-ink: var(--milk);
   padding: 72px 22px 88px;
@@ -30,14 +29,14 @@
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.18em;
-  color: #56633b;
+  color: var(--brand-gold-deep);
 }
 .heading h2 {
   margin-top: 14px;
   font-size: 49px;
 }
 .heading h2 em {
-  color: #66734a;
+  color: var(--brand-gold-deep);
 }
 .heading > p {
   font-size: 12px;
@@ -55,10 +54,10 @@
   height: 18px;
   margin: 0 -6px;
   border-radius: 10px;
-  background: linear-gradient(#3b302a, #1c1512);
+  background: linear-gradient(var(--brand-surface), var(--brand-black-deep));
   box-shadow:
-    0 10px 18px -10px #28201c99,
-    inset 0 1px 0 #f5eddf26;
+    0 10px 18px -10px #17141199,
+    inset 0 1px 0 #f7f0e326;
 }
 .printer span {
   position: absolute;
@@ -67,7 +66,7 @@
   left: 16px;
   height: 3px;
   border-radius: 2px;
-  background: #0b0807;
+  background: var(--brand-black-deep);
   box-shadow: inset 0 1px 2px #000;
 }
 
@@ -88,7 +87,9 @@
   display: none;
 }
 .track:focus-visible {
-  outline-offset: -3px;
+  outline: 2px solid var(--brand-gold-deep);
+  outline-offset: -2px;
+  border-radius: 20px;
 }
 .list {
   display: grid;
@@ -104,7 +105,7 @@
   scroll-snap-align: start;
   perspective: 900px;
   /* Follows the notched ticket, unlike a box-shadow. */
-  filter: drop-shadow(0 18px 22px #28201c40);
+  filter: drop-shadow(0 18px 22px #17141140);
 }
 
 .ticket {
@@ -121,8 +122,8 @@
   transform-style: preserve-3d;
   /* Half-circle notches where the stub tears off. */
   mask:
-    radial-gradient(circle var(--notch) at var(--cut) 0, #0000 97%, #000)
-      top / 100% 51% no-repeat,
+    radial-gradient(circle var(--notch) at var(--cut) 0, #0000 97%, #000) top /
+      100% 51% no-repeat,
     radial-gradient(circle var(--notch) at var(--cut) 100%, #0000 97%, #000)
       bottom / 100% 51% no-repeat;
 }
@@ -167,9 +168,10 @@
   color: var(--stub);
 }
 .title {
-  font-size: 36px;
-  line-height: 1;
+  font-size: clamp(25px, 10cqi, 36px);
+  line-height: 1.08;
   letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
 }
 .description {
   font-size: 12px;
@@ -186,6 +188,7 @@
 }
 .total {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 8px;
   margin-top: auto;
@@ -223,7 +226,7 @@
   top: -0.25em;
   flex: 1;
   min-width: 12px;
-  border-bottom: 1px dotted #f5eddf45;
+  border-bottom: 1px dotted #f7f0e345;
 }
 .linePrice {
   font-variant-numeric: tabular-nums;
@@ -243,7 +246,7 @@
   gap: 6px 12px;
   margin-top: auto;
   padding-top: 14px;
-  border-top: 1px dashed #f5eddf30;
+  border-top: 1px dashed #f7f0e330;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -269,7 +272,7 @@
   justify-content: space-between;
   width: var(--stub-width);
   padding: 22px 0 16px;
-  border-left: 2px dashed #28201c40;
+  border-left: 2px dashed #17141140;
   border-radius: 0 18px 18px 0;
   background: var(--stub);
   color: var(--stub-ink);
@@ -333,14 +336,76 @@
   gap: 14px 20px;
   margin-top: 4px;
 }
+.progress {
+  position: relative;
+  width: 100%;
+  height: 44px;
+}
+.progressTrack {
+  position: absolute;
+  inset: 21px 0 auto;
+  height: 3px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #1714111a;
+}
+.progressTrack > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand-gold-deep);
+  transition: transform 240ms var(--ease-out);
+}
+.progress input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+}
+.progress:has(input:focus-visible) {
+  outline: 2px solid var(--brand-gold-deep);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.progress:has(input:focus-visible) .progressTrack > span {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .progressTrack > span,
+  .stub {
+    transition: none;
+  }
+  .ticket:hover .stub {
+    transform: none;
+  }
+}
 .count {
   font-size: 11px;
   color: #716459;
 }
 
 @media (max-width: 599px) {
+  .track {
+    margin-inline: 0;
+    padding-inline: 0;
+    scroll-padding-inline: 0;
+  }
   .ticket {
-    --stub-width: 80px;
+    --stub-width: 64px;
+  }
+  .list {
+    grid-auto-columns: 100%;
+    gap: 22px;
+  }
+  .slot {
+    scroll-snap-stop: always;
+    filter: drop-shadow(0 12px 12px #17141126);
+  }
+  .main {
+    padding-inline: 18px;
   }
   .stubLabel {
     font-size: 38px;

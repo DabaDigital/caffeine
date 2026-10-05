@@ -3,7 +3,18 @@ import localFont from "next/font/local";
 import "./globals.css";
 
 const display = localFont({
-  src: "../node_modules/@fontsource/cormorant-garamond/files/cormorant-garamond-latin-400-normal.woff2",
+  src: [
+    {
+      path: "./fonts/fraunces-latin-variable-normal.woff2",
+      weight: "100 900",
+      style: "normal",
+    },
+    {
+      path: "./fonts/fraunces-latin-variable-italic.woff2",
+      weight: "100 900",
+      style: "italic",
+    },
+  ],
   variable: "--font-display",
   display: "swap",
   fallback: ["Georgia"],
@@ -86,7 +97,7 @@ export const metadata: Metadata = {
     ...(siteUrl ? { images: ["/assets/hero-caffeine.webp"] } : {}),
   },
 };
-export const viewport: Viewport = { themeColor: "#28201c" };
+export const viewport: Viewport = { themeColor: "#171411" };
 export default function RootLayout({
   children,
 }: {

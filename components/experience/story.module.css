@@ -2,8 +2,8 @@
    paused animation, no JavaScript); [data-scene] turns the stage into a
    sticky, scroll-driven scene on wide screens. */
 .story {
-  --skeleton-base: #2a211c;
-  --skeleton-shine: #f5eddf14;
+  --skeleton-base: var(--brand-surface);
+  --skeleton-shine: #f7f0e314;
   position: relative;
   color: var(--milk);
   background: var(--coffee);
@@ -47,7 +47,7 @@
 .shade {
   position: absolute;
   inset: 0;
-  background: #120d0a;
+  background: var(--brand-black-deep);
   opacity: 0;
 }
 .copy {
@@ -60,18 +60,18 @@
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.18em;
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .story .title {
   margin-top: 18px;
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(64px, 15vw, 150px);
-  font-weight: 400;
+  font-weight: 600;
   line-height: 0.88;
   letter-spacing: -0.05em;
 }
 .title em {
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .lede {
   max-width: 42ch;
@@ -106,7 +106,7 @@
 .card {
   padding: 10px 10px 14px;
   border-radius: 6px;
-  background: #f7f0e3;
+  background: var(--brand-cream);
   color: var(--coffee);
   box-shadow: 0 30px 50px -30px #000000d9;
   scroll-snap-align: start;
@@ -134,6 +134,63 @@
 }
 .ritual {
   max-width: 520px;
+}
+.gallery {
+  min-width: 0;
+}
+@media (max-width: 899px) {
+  .chapter[data-chapter="2"]:has([data-horizontal]) {
+    overflow: visible;
+    padding-top: 0;
+  }
+  .gallery[data-horizontal] {
+    height: 220svh;
+    margin-inline: -22px;
+  }
+  .gallery[data-horizontal] .galleryStage {
+    position: sticky;
+    top: 78px;
+    height: calc(100svh - 78px);
+    display: flex;
+    align-items: center;
+    overflow: clip;
+  }
+  .gallery[data-horizontal] .cards {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+    will-change: transform;
+  }
+  .gallery[data-horizontal] .card {
+    flex: 0 0 min(64vw, 320px, 43svh);
+    height: min(74svh, 660px);
+    max-height: calc(100svh - 126px);
+    display: flex;
+    flex-direction: column;
+    padding: 10px 10px 22px;
+    border-radius: 2px;
+    transform-origin: center;
+    will-change: transform;
+  }
+  .gallery[data-horizontal] .cardPhoto {
+    flex: 1;
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+  .gallery[data-horizontal] .card p {
+    flex: none;
+    font-size: clamp(21px, 5.8vw, 26px);
+    min-height: 2.2em;
+  }
+}
+@media (min-width: 600px) and (max-width: 899px) {
+  .gallery[data-horizontal] {
+    margin-inline: calc(-7vw);
+  }
 }
 .ritual .lede {
   margin: 0 0 22px;
@@ -235,7 +292,7 @@
   padding: 0 4px 0 12px;
   border: 0;
   background: none;
-  color: #f5eddfa6;
+  color: #f7f0e3a6;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -248,7 +305,7 @@
   place-items: center;
   width: 32px;
   height: 32px;
-  border: 1px solid #f5eddf59;
+  border: 1px solid #f7f0e359;
   border-radius: 50%;
   font-variant-numeric: tabular-nums;
   transition:
@@ -260,8 +317,8 @@
   color: var(--milk);
 }
 .dots button[aria-current="step"] span {
-  border-color: var(--pistachio);
-  background: var(--pistachio);
+  border-color: var(--gold);
+  background: var(--gold);
   color: var(--coffee);
 }
 

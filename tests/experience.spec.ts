@@ -77,6 +77,7 @@ test("menu category links and search work on mobile", async ({ page }) => {
 test("the reviews section shows published reviews or invites the first", async ({
   page,
 }) => {
+  await page.route("**/api/google-reviews", (route) => route.fulfill({ status: 503, json: { available: false } }));
   await page.goto("/");
   await page
     .getByRole("navigation", { name: "Main navigation" })
@@ -89,6 +90,7 @@ test("the reviews section shows published reviews or invites the first", async (
   ).toBeVisible();
   if (await reviews.locator("blockquote").count()) {
     await expect(reviews.getByText(/from \d+ reviews?$/)).toBeVisible();
+    await reviews.getByText("Rating breakdown", { exact: false }).click();
     await expect(
       reviews
         .getByRole("list", { name: "Reviews by rating" })

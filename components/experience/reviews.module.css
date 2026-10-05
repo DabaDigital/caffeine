@@ -1,12 +1,11 @@
-/* Guest reviews on the espresso background. Contrast on --rv-paper:
-   muted 7.8:1, accent 10:1; on cards (--rv-card) muted 6.8:1. */
+/* Guest reviews use the shared charcoal, cream, and gold palette. */
 .reviews {
   --rv-ink: var(--milk);
   --rv-muted: var(--muted);
-  --rv-accent: var(--pistachio);
-  --rv-card: #342922;
-  --rv-line: #f5eddf1f;
-  --rv-line-strong: #f5eddf3d;
+  --rv-accent: var(--gold);
+  --rv-card: var(--brand-surface);
+  --rv-line: #f7f0e31f;
+  --rv-line-strong: #f7f0e33d;
   --rv-header: 78px;
   --pager-ink: var(--rv-muted);
   --pager-line: var(--rv-line-strong);
@@ -19,6 +18,43 @@
   margin: auto;
   padding: 80px 24px 88px;
   color: var(--rv-ink);
+}
+.googleAttribution {
+  margin-bottom: 22px;
+  color: #fff;
+  font:
+    400 14px/1.6 var(--font-interface),
+    sans-serif;
+  letter-spacing: normal;
+}
+.guestLabel {
+  margin-bottom: 8px;
+  color: var(--rv-accent);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+.sourceSummary {
+  margin-bottom: 24px;
+  color: var(--rv-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.googleReviews {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--rv-line-strong);
+}
+.googleAttribution span {
+  color: var(--rv-muted);
+  font-size: 12px;
+}
+.googlePolicy {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: var(--rv-muted);
 }
 /* Long reviews must not widen the grid beyond the screen. */
 .aside,
@@ -41,11 +77,8 @@
 
 .summary {
   margin-top: 34px;
-  padding: 26px 24px 24px;
-  border: 1px solid var(--rv-line);
-  border-radius: 26px;
-  background: linear-gradient(180deg, #f5eddf0e, #f5eddf04);
-  box-shadow: inset 0 1px 0 #f5eddf14;
+  padding: 28px 0 0;
+  border-top: 1px solid var(--rv-line-strong);
 }
 .score {
   display: flex;
@@ -97,7 +130,7 @@
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: #f5eddf1a;
+  background: #f7f0e31a;
 }
 .bar > span {
   position: absolute;
@@ -126,22 +159,21 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #f5eddf17;
+  background: #f7f0e317;
   transition: transform 260ms var(--ease-out);
 }
 
 .featured {
   position: relative;
   margin: 0;
-  padding-top: 52px;
+  padding: clamp(24px, 3vw, 40px);
+  border-left: 2px solid var(--rv-accent);
+  background: #f7f0e306;
 }
-.quoteMark {
-  position: absolute;
-  top: -26px;
-  left: -8px;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 180px;
-  line-height: 1;
+.featuredLabel {
+  margin-bottom: 22px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
   color: var(--rv-accent);
 }
 .featured blockquote {
@@ -149,9 +181,9 @@
 }
 .featured blockquote p {
   font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(30px, 3.6vw, 50px);
+  font-size: clamp(29px, 3vw, 42px);
   font-style: italic;
-  line-height: 1.12;
+  line-height: 1.2;
   letter-spacing: -0.02em;
   text-wrap: pretty;
 }
@@ -169,9 +201,9 @@
   color: var(--rv-ink);
 }
 
-/* Four reviews to a page: stacked on phones, a masonry wall when wider. */
+/* Four reviews per page, in reading order with aligned author details. */
 .wallRegion {
-  margin-top: 44px;
+  margin-top: 24px;
 }
 .wall {
   display: grid;
@@ -192,24 +224,28 @@
   flex-direction: column;
   gap: 16px;
   margin: 0;
-  padding: 24px 22px 20px;
+  height: 100%;
+  min-height: 230px;
+  padding: 24px;
   border: 1px solid var(--rv-line);
-  border-radius: 22px;
-  background: var(--rv-card);
+  border-radius: 12px;
+  background: #f7f0e305;
 }
 .card blockquote {
   margin: 0;
 }
 .card blockquote p {
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 19px;
-  line-height: 1.32;
+  font-family: var(--font-interface), sans-serif;
+  font-size: 14px;
+  line-height: 1.75;
+  color: #e3d9cb;
 }
 .author {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-top: 14px;
+  margin-top: auto;
+  padding-top: 18px;
   border-top: 1px solid var(--rv-line);
   font-size: 12px;
 }
@@ -220,7 +256,7 @@
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: #c6d4a41f;
+  background: color-mix(in srgb, var(--brand-gold) 12%, transparent);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -233,9 +269,8 @@
 .author strong + span {
   display: block;
   margin-top: 3px;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 11px;
+  line-height: 1.5;
   color: var(--rv-muted);
 }
 
@@ -279,7 +314,7 @@
   font-family: var(--font-display), Georgia, serif;
   font-size: 340px;
   line-height: 1;
-  color: #66734a1f;
+  color: color-mix(in srgb, var(--brand-gold-deep) 12%, transparent);
   pointer-events: none;
 }
 .inviteKicker {
@@ -287,7 +322,7 @@
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #56633b;
+  color: var(--brand-gold-deep);
 }
 .invite h3 {
   margin: 20px 0 22px;
@@ -296,7 +331,7 @@
   letter-spacing: -0.035em;
 }
 .invite h3 em {
-  color: #66734a;
+  color: var(--brand-gold-deep);
 }
 .invite p:not(.inviteKicker) {
   position: relative;
@@ -312,24 +347,22 @@
   padding-right: 10px;
 }
 .cta .arrow {
-  background: #28201c14;
+  background: #17141114;
 }
 
 @media (min-width: 768px) {
   .wallRegion {
-    margin-top: 52px;
+    margin-top: 24px;
   }
   .wall {
-    display: block;
-    columns: 2;
-    column-gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
   }
   .card {
-    margin-bottom: 18px;
-    break-inside: avoid;
+    min-width: 0;
   }
   .card blockquote p {
-    font-size: 21px;
+    font-size: 14px;
   }
 }
 
@@ -343,7 +376,7 @@
 @media (min-width: 1024px) {
   .reviews {
     grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.5fr);
-    column-gap: clamp(48px, 7vw, 120px);
+    column-gap: clamp(40px, 5vw, 80px);
     align-items: start;
   }
   .aside {
@@ -351,7 +384,7 @@
     top: calc(var(--rv-header) + 40px);
   }
   .main {
-    padding-top: 30px;
+    padding-top: 0;
   }
 }
 
@@ -359,5 +392,73 @@
   .mapLink:hover .arrow,
   .cta:hover .arrow {
     transform: translate(2px, -2px) scale(1.06);
+  }
+}
+
+.ratingDetails {
+  margin-top: 24px;
+  border-block: 1px solid var(--rv-line);
+}
+.ratingDetails summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 48px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--rv-muted);
+  list-style: none;
+}
+.ratingDetails summary::-webkit-details-marker {
+  display: none;
+}
+.ratingDetails summary > span {
+  font-size: 20px;
+}
+.ratingDetails[open] summary > span {
+  transform: rotate(45deg);
+}
+.ratingDetails .breakdown {
+  margin: 0;
+  padding: 0 0 20px;
+  border: 0;
+}
+.reviewText {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+.readMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--rv-accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+.readMore:hover {
+  color: var(--rv-ink);
+}
+.readMore:focus-visible,
+.ratingDetails summary:focus-visible {
+  outline: 2px solid var(--rv-accent);
+  outline-offset: 4px;
+}
+.author > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 767px) {
+  .card figure {
+    min-height: 0;
   }
 }

@@ -7,14 +7,17 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { SiteOffer } from "@/lib/content";
 import { cafeToday, currency, formatPrice, shortDate } from "@/lib/site";
 import { useSiteMotion } from "./Motion";
-import { Pager } from "./Pager";
 import { ShimmerImage } from "./Skeleton";
 import s from "./offers.module.css";
 
 const noSubscription = () => () => {};
 /** Today in Casablanca, read on the client so cached HTML never goes stale. */
 const useCafeToday = () =>
-  useSyncExternalStore(noSubscription, () => cafeToday(), () => null);
+  useSyncExternalStore(
+    noSubscription,
+    () => cafeToday(),
+    () => null,
+  );
 
 const daysBetween = (from: string, to: string) =>
   Math.round(
@@ -59,7 +62,9 @@ export function OfferTickets({ offers }: { offers: SiteOffer[] }) {
       const count = Math.max(1, Math.ceil(offers.length / perView));
       const page = Math.min(
         count - 1,
-        Math.round(element.scrollLeft / (step * perView)),
+        element.scrollLeft >= element.scrollWidth - element.clientWidth - 2
+          ? count - 1
+          : Math.round(element.scrollLeft / (step * perView)),
       );
       setView((old) =>
         old.page === page &&
@@ -80,12 +85,15 @@ export function OfferTickets({ offers }: { offers: SiteOffer[] }) {
     };
   }, [offers.length]);
 
-  function goPage(page: number) {
+  function goPage(page: number, immediate = false) {
     track.current?.scrollTo({
       left: page * view.perView * view.step,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
+      behavior:
+        immediate ||
+        paused ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
     });
   }
 
@@ -101,7 +109,10 @@ export function OfferTickets({ offers }: { offers: SiteOffer[] }) {
       },
       (context) => {
         if (!context.conditions?.motion) return;
-        const tickets = gsap.utils.toArray<HTMLElement>("[data-ticket]", element);
+        const tickets = gsap.utils.toArray<HTMLElement>(
+          "[data-ticket]",
+          element,
+        );
         // Printed one by one, from the top down.
         gsap.fromTo(
           tickets,
@@ -160,6 +171,21 @@ export function OfferTickets({ offers }: { offers: SiteOffer[] }) {
         role="region"
         aria-label="Offers"
         tabIndex={0}
+        onKeyDown={(event) => {
+          const page =
+            event.key === "ArrowRight"
+              ? view.page + 1
+              : event.key === "ArrowLeft"
+                ? view.page - 1
+                : event.key === "Home"
+                  ? 0
+                  : event.key === "End"
+                    ? view.count - 1
+                    : null;
+          if (page === null) return;
+          event.preventDefault();
+          goPage(Math.max(0, Math.min(view.count - 1, page)), true);
+        }}
       >
         <ul className={s.list}>
           {offers.map((offer, index) => (
@@ -174,15 +200,26 @@ export function OfferTickets({ offers }: { offers: SiteOffer[] }) {
       </div>
       {view.count > 1 && (
         <div className={s.controls}>
-          <p className={s.count}>
-            {offers.length} offers · swipe or use the arrows
-          </p>
-          <Pager
-            label="Offer pages"
-            count={view.count}
-            page={view.page}
-            onPage={goPage}
-          />
+          <p className={s.count}>Swipe to discover · {offers.length} offers</p>
+          <div className={s.progress}>
+            <span className={s.progressTrack} aria-hidden="true">
+              <span
+                style={{
+                  width: `${100 / view.count}%`,
+                  transform: `translateX(${view.page * 100}%)`,
+                }}
+              />
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={view.count - 1}
+              value={view.page}
+              aria-label="Browse offers"
+              aria-valuetext={`Offer page ${view.page + 1} of ${view.count}`}
+              onChange={(event) => goPage(Number(event.target.value), true)}
+            />
+          </div>
         </div>
       )}
     </div>

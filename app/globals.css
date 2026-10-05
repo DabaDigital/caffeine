@@ -1,14 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #090806;
-  --surface: #17100c;
+  /* Caffeine's supplied identity: black, warm gold and cream. */
+  --brand-black: #171411;
+  --brand-black-deep: #100e0c;
+  --brand-surface: #24201b;
+  --brand-gold: #d6a64f;
+  --brand-gold-light: #eccb83;
+  --brand-gold-soft: #f0dfba;
+  --brand-gold-deep: #78501e;
+  --brand-cream: #f7f0e3;
+  --brand-muted: #c0b4a2;
+  --background: var(--brand-black);
+  --surface: var(--brand-surface);
   --deep-brown: #2a180e;
-  --cream: #f3e5cc;
-  --foreground: #fff8eb;
-  --gold: #d6a347;
+  --cream: var(--brand-cream);
+  --foreground: var(--brand-cream);
+  --gold: var(--brand-gold);
   --caramel: #a9652b;
-  --muted: #afa292;
+  --muted: var(--brand-muted);
   --line: rgba(243, 229, 204, 0.14);
   color-scheme: dark;
 }
@@ -25,6 +35,9 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 96px;
+}
+html.lenis {
+  scroll-behavior: auto;
 }
 body {
   margin: 0;

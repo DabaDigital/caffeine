@@ -1,16 +1,13 @@
-/* The menu as the café wall at night: OSB board under Edison bulbs, with the
-   menu on a black screen like the ones behind the counter. Gold belongs to
-   the screen, as on the real boards. Contrast on the screen (#110d0b):
-   text 15:1, muted 8.6:1, gold 10:1; gold-ink on gold 9.8:1. */
+/* Cafe menu boards use charcoal screens, gold accents, and warm lighting. */
 .wall {
-  --gold: #e8b64c;
-  --gold-ink: #1c1309;
+  --gold: var(--brand-gold);
+  --gold-ink: var(--brand-black);
   --board-text: var(--milk);
-  --board-muted: #b9ab9b;
-  --board-line: #f5eddf1c;
-  --board-line-strong: #f5eddf38;
-  --skeleton-base: #2a211c;
-  --skeleton-shine: #f5eddf1a;
+  --board-muted: var(--brand-muted);
+  --board-line: #f7f0e31c;
+  --board-line-strong: #f7f0e338;
+  --skeleton-base: var(--brand-surface);
+  --skeleton-shine: #f7f0e31a;
   --pager-ink: var(--board-muted);
   --pager-line: var(--board-line-strong);
   --pager-active: var(--gold);
@@ -24,7 +21,7 @@
   background:
     radial-gradient(ellipse 55% 42% at 78% 0%, #ffb35c38, transparent 72%),
     radial-gradient(ellipse 70% 50% at 8% 100%, #ffb35c12, transparent 70%),
-    linear-gradient(180deg, #140c07c7 0%, #0f0906e6 58%, #0d0805f0 100%),
+    linear-gradient(180deg, #171411c7 0%, #100e0ce6 58%, #100e0cf0 100%),
     url("/assets/osb-texture.webp") 0 0 / 420px 420px repeat;
 }
 /* Let the brown opening dissolve into the wall, including the pendant cords. */
@@ -38,10 +35,10 @@
   background: linear-gradient(
     to bottom,
     var(--coffee) 0%,
-    #28201cf2 15%,
-    #28201cb3 40%,
-    #28201c4d 70%,
-    #28201c00 100%
+    #171411f2 15%,
+    #171411b3 40%,
+    #1714114d 70%,
+    #17141100 100%
   );
 }
 .inner {
@@ -61,7 +58,7 @@
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.18em;
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .heading h2 {
   margin-top: 14px;
@@ -102,11 +99,7 @@
 .cord {
   width: calc(5px * var(--scale));
   height: var(--drop);
-  background: repeating-linear-gradient(
-    -40deg,
-    #8c6b45 0 2px,
-    #5d4329 2px 4px
-  );
+  background: repeating-linear-gradient(-40deg, #8c6b45 0 2px, #5d4329 2px 4px);
   border-radius: 2px;
 }
 .socket {
@@ -167,10 +160,15 @@
   position: relative;
   padding: 8px;
   border-radius: 26px;
-  background: linear-gradient(150deg, #3b3029 0%, #120d0b 38%, #0b0807 100%);
+  background: linear-gradient(
+    150deg,
+    var(--brand-surface) 0%,
+    var(--brand-black-deep) 38%,
+    var(--brand-black-deep) 100%
+  );
   box-shadow:
     0 0 0 1px #00000099,
-    inset 0 1px 0 #f5eddf24,
+    inset 0 1px 0 #f7f0e324,
     0 60px 90px -50px #000000e6,
     0 0 120px -40px #ffb45c47;
   transform-style: preserve-3d;
@@ -181,9 +179,9 @@
   border-radius: 19px;
   background: radial-gradient(
     130% 90% at 50% -10%,
-    #231b16 0%,
-    #110d0b 55%,
-    #0c0908 100%
+    var(--brand-surface) 0%,
+    var(--brand-black-deep) 55%,
+    var(--brand-black-deep) 100%
   );
   box-shadow:
     inset 0 0 0 1px #000,
@@ -281,7 +279,7 @@
 }
 .search:focus-within {
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px #e8b64c33;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-gold) 20%, transparent);
 }
 .search input {
   flex: 1;
@@ -430,7 +428,11 @@
   display: grid;
   place-items: center;
   height: 100%;
-  background: radial-gradient(circle at 50% 35%, #3a2d24, #1d1613);
+  background: radial-gradient(
+    circle at 50% 35%,
+    var(--brand-surface),
+    var(--brand-black)
+  );
   font-family: var(--font-display), Georgia, serif;
   font-size: 28px;
   font-style: italic;
@@ -511,10 +513,10 @@
 .offerTag {
   padding: 3px 8px;
   border-radius: 4px;
-  background: var(--pistachio);
+  background: var(--gold);
   font-size: 10px;
   font-weight: 700;
-  color: #20291a;
+  color: var(--brand-black);
 }
 .badge {
   font-size: 9px;
@@ -526,7 +528,7 @@
 .wall mark {
   padding: 0 1px;
   border-radius: 3px;
-  background: #e8b64c40;
+  background: color-mix(in srgb, var(--brand-gold) 25%, transparent);
   color: inherit;
 }
 .pager {
@@ -691,7 +693,7 @@
     overflow: hidden;
     border-radius: 18px;
     background: var(--skeleton-base);
-    box-shadow: inset 0 0 0 1px #f5eddf14;
+    box-shadow: inset 0 0 0 1px #f7f0e314;
   }
   .spotPhoto img {
     padding: 18px;
@@ -717,7 +719,7 @@
     z-index: 2;
     padding: 6px 9px;
     border-radius: 5px;
-    background: #110d0be0;
+    background: color-mix(in srgb, var(--brand-black-deep) 88%, transparent);
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -780,7 +782,7 @@
     color: var(--board-text);
   }
   .item:hover {
-    background: #f5eddf0b;
+    background: #f7f0e30b;
   }
   .item:hover .itemName {
     color: var(--gold);
@@ -790,7 +792,7 @@
   }
   .clear:hover,
   .suggestions button:hover {
-    background: #f5eddf14;
+    background: #f7f0e314;
   }
   .spotCard:hover .spotPhoto img {
     transform: scale(1.04);

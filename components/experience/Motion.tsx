@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -10,14 +11,79 @@ import {
 } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
 import s from "./experience.module.css";
 
-const MotionContext = createContext({ paused: false, toggle: () => {} });
+function nativeScrollTo(top: number, immediate = false) {
+  window.scrollTo({
+    top,
+    behavior: immediate || window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "instant"
+      : "smooth",
+  });
+}
+
+const MotionContext = createContext({
+  paused: false,
+  toggle: () => {},
+  scrollTo: nativeScrollTo,
+});
 export const useSiteMotion = () => useContext(MotionContext);
 
 export function MotionRoot({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(false);
+  const scroller = useRef<Lenis | null>(null);
+  const scrollTo = useCallback((top: number, immediate = false) => {
+    if (scroller.current) scroller.current.scrollTo(top, { immediate });
+    else nativeScrollTo(top, immediate || paused);
+  }, [paused]);
+
+  useEffect(() => {
+    if (paused) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const media = gsap.matchMedia();
+    media.add("(prefers-reduced-motion: no-preference)", () => {
+      const lenis = new Lenis({
+        anchors: { offset: -96 },
+        smoothWheel: true,
+        syncTouch: false,
+        allowNestedScroll: true,
+        stopInertiaOnNavigate: true,
+        prevent: (element) => !!element.closest("dialog, [data-lenis-prevent]"),
+      });
+      scroller.current = lenis;
+      lenis.on("scroll", ScrollTrigger.update);
+      const tick = (time: number) => lenis.raf(time * 1000);
+      gsap.ticker.add(tick);
+      gsap.ticker.lagSmoothing(0);
+
+      const syncDialog = () => {
+        if (document.querySelector("dialog[open]")) lenis.stop();
+        else if (lenis.isStopped) lenis.start();
+      };
+      const observer = new MutationObserver(syncDialog);
+      observer.observe(document.body, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ["open"],
+      });
+      // React closes mobile navigation before this bubbles to Lenis on window.
+      document.addEventListener("click", syncDialog);
+      syncDialog();
+
+      return () => {
+        observer.disconnect();
+        document.removeEventListener("click", syncDialog);
+        gsap.ticker.remove(tick);
+        lenis.destroy();
+        scroller.current = null;
+      };
+    });
+    return () => media.revert();
+  }, [paused]);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -106,7 +172,7 @@ export function MotionRoot({ children }: { children: ReactNode }) {
 
   return (
     <MotionContext.Provider
-      value={{ paused, toggle: () => setPaused((value) => !value) }}
+      value={{ paused, toggle: () => setPaused((value) => !value), scrollTo }}
     >
       <div ref={root} className={s.page} data-motion-paused={paused}>
         {children}

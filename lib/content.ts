@@ -110,6 +110,9 @@ export type SiteContact = {
 };
 
 export type SiteReview = {
+  authorUrl?: string;
+  authorPhoto?: string;
+  reviewUrl?: string;
   id: string;
   author: string;
   rating: number;

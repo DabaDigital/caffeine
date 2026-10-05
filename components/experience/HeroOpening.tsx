@@ -14,7 +14,7 @@ export function HeroOpening({ place }: { place: string | null }) {
   const root = useRef<HTMLElement>(null);
   const entrance = useRef<gsap.core.Timeline | null>(null);
   const hasEntered = useRef(false);
-  const { paused } = useSiteMotion();
+  const { paused, scrollTo } = useSiteMotion();
 
   useLayoutEffect(() => {
     const section = root.current;
@@ -265,7 +265,7 @@ export function HeroOpening({ place }: { place: string | null }) {
 
   const replay = () => {
     if (!entrance.current || paused) return;
-    window.scrollTo({ top: 0, behavior: "instant" });
+    scrollTo(0, true);
     ScrollTrigger.getById("caffeine-opening")?.animation?.progress(0);
     ScrollTrigger.update();
     entrance.current.restart();
@@ -356,9 +356,6 @@ export function HeroOpening({ place }: { place: string | null }) {
         </div>
 
         <div className={s.sideNote} data-first-copy>
-          <span className={s.asterisk} data-intro-detail aria-hidden="true">
-            ✳
-          </span>
           <p data-intro-detail>
             Big on flavor.
             <br />
@@ -419,7 +416,7 @@ export function HeroOpening({ place }: { place: string | null }) {
         <div className={s.curtain} data-curtain aria-hidden="true">
           <div>
             <span data-curtain-word>
-              Caffeine<span className={s.curtainStar}>✳</span>
+              Caffeine
             </span>
           </div>
           <p>A GOOD DAY STARTS HERE.</p>

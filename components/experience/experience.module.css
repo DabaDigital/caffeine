@@ -1,17 +1,15 @@
-/* A coffee-house palette. Mobile is the base layout; larger screens add space.
+/* Caffeine's black-and-gold identity. Mobile is the base layout; larger screens add space.
    Layers: artwork 0–3, sticky menu rail 4, navigation 20, mobile dock 25,
    native dialogs top layer. */
 .page {
-  --coffee: #28201c;
-  --coffee-dark: #211a17;
-  --milk: #f5eddf;
-  --pistachio: #c6d4a4;
-  --butter: #c6d4a4;
-  --muted: #bfb4a8;
-  --gold: #c6d4a4;
-  --foreground: #f5eddf;
-  --background: #28201c;
-  --surface: #352a23;
+  --coffee: var(--brand-black);
+  --coffee-dark: var(--brand-black-deep);
+  --milk: var(--brand-cream);
+  --muted: var(--brand-muted);
+  --gold: var(--brand-gold);
+  --foreground: var(--brand-cream);
+  --background: var(--brand-black);
+  --surface: var(--brand-surface);
   --line: #f5eddf25;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   color: var(--milk);
@@ -34,7 +32,8 @@
 .page h2,
 .page h3 {
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 400;
+  font-weight: 600;
+  font-optical-sizing: auto;
 }
 .page h2 {
   font-size: clamp(46px, 6vw, 86px);
@@ -43,7 +42,7 @@
 }
 .page h2 em {
   color: inherit;
-  font-weight: 400;
+  font-weight: inherit;
 }
 .page :focus-visible {
   outline: 2px solid currentColor;
@@ -53,12 +52,12 @@
   position: fixed;
   inset: 0 0 auto;
   z-index: 20;
-  border-bottom: 1px solid #f5eddf20;
-  background: #28201cec;
+  border-bottom: 1px solid #d6a64f30;
+  background: #171411ec;
   backdrop-filter: blur(14px);
 }
 .headerScrolled {
-  background: #211a17f5;
+  background: #100e0cf5;
 }
 .headerInner {
   height: 78px;
@@ -84,6 +83,8 @@
 .brand > span {
   font-family: var(--font-display), Georgia, serif;
   font-size: 31px;
+  font-weight: 700;
+  color: var(--gold);
   letter-spacing: -1px;
   line-height: 0.9;
 }
@@ -94,6 +95,7 @@
   letter-spacing: 1.65px;
   margin-top: 7px;
   font-weight: 600;
+  color: var(--brand-gold-light);
 }
 .navLinks,
 .headerActions .headerVisit {
@@ -124,7 +126,7 @@
   border-radius: 100px;
   font-size: 12px;
   font-weight: 600;
-  background: var(--pistachio);
+  background: var(--gold);
   color: var(--coffee-dark);
   white-space: nowrap;
   transition:
@@ -155,14 +157,14 @@
   font-weight: 600;
   letter-spacing: 1.8px;
   line-height: 1.8;
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .statusDot {
   display: inline-block;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--pistachio);
+  background: var(--gold);
   margin-right: 8px;
   vertical-align: 1px;
 }
@@ -182,7 +184,7 @@
   display: inline-block;
 }
 .italicLine {
-  color: var(--pistachio);
+  color: var(--gold);
   font-style: italic;
   padding-left: 0.22em;
 }
@@ -227,13 +229,13 @@
   left: 7%;
   top: 10%;
   border-radius: 50%;
-  background: #c6d4a4;
-  box-shadow: inset -22px -20px 65px #88956726;
+  background: var(--brand-gold);
+  box-shadow: inset -22px -20px 65px #78501e26;
 }
 .heroHalo span {
   position: absolute;
   inset: 7%;
-  border: 1px solid #53633825;
+  border: 1px solid #78501e25;
   border-radius: 50%;
 }
 .heroHalo span + span {
@@ -245,7 +247,7 @@
   top: 39%;
   width: 108%;
   text-align: center;
-  color: #25311e26;
+  color: #17141126;
   font-size: clamp(36px, 9vw, 55px);
   line-height: 1;
   font-weight: 800;
@@ -331,7 +333,7 @@
   border-radius: 50%;
   transform: rotate(-15deg);
   z-index: 2;
-  outline: 1px dashed #28201c66;
+  outline: 1px dashed #17141166;
   outline-offset: -6px;
 }
 .coffeeSeal span {
@@ -367,13 +369,13 @@
   gap: 7px;
   padding: 13px 15px;
   border: 1px solid #f5eddf2e;
-  background: #30251fde;
+  background: #24201bde;
   backdrop-filter: blur(10px);
   transform: rotate(-4deg);
   z-index: 2;
 }
 .heroProductLabel > span:first-child {
-  color: var(--pistachio);
+  color: var(--gold);
   font-size: 7px;
   letter-spacing: 1.6px;
 }
@@ -420,7 +422,7 @@
   margin: auto;
 }
 .menuSection .eyebrow {
-  color: #626f47;
+  color: var(--brand-gold-deep);
 }
 .sectionHeading {
   display: flex;
@@ -433,7 +435,7 @@
   font-size: 49px;
 }
 .sectionHeading h2 em {
-  color: #66734a;
+  color: var(--brand-gold-deep);
 }
 .sectionHeading > p {
   color: #716459;
@@ -485,7 +487,7 @@
   bottom: 4%;
   width: 46%;
   height: 58%;
-  background: #b8c29b;
+  background: var(--brand-gold-soft);
   border: 7px solid var(--milk);
   border-bottom-width: 30px;
   transform: rotate(8deg);
@@ -511,7 +513,7 @@
   width: 93px;
   height: 93px;
   border-radius: 50%;
-  background: var(--pistachio);
+  background: var(--gold);
   color: var(--coffee);
   transform: rotate(14deg);
   display: flex;
@@ -541,7 +543,7 @@
 .storyCopy h2 > span:nth-of-type(3),
 .storyCopy h2 > span:nth-of-type(4) {
   font-style: italic;
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .storyCopy > p:not(.eyebrow) {
   max-width: 355px;
@@ -572,7 +574,7 @@
   font-family: var(--font-script), cursive;
   font-size: 29px;
   transform: rotate(-4deg);
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .pairing {
   position: relative;
@@ -589,7 +591,7 @@
   object-position: 45% center;
 }
 .pairingShade {
-  background: linear-gradient(180deg, #211a17bb, #211a1760 50%, #211a1760);
+  background: linear-gradient(180deg, #100e0cbb, #100e0c60 50%, #100e0c60);
 }
 .pairingCopy {
   position: absolute;
@@ -608,7 +610,7 @@
   font-size: 64px;
 }
 .pairingCopy h2 em {
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .pairingDescription {
   font-size: 12px;
@@ -651,7 +653,7 @@
   font-size: 57px;
 }
 .locationCopy h2 em {
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .locationCopy > p:not(.eyebrow) {
   color: var(--muted);
@@ -666,7 +668,7 @@
   margin: 25px 0;
 }
 .locationAddress svg {
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .locationAddress span {
   display: block;
@@ -721,7 +723,7 @@
 }
 .footer {
   padding: 36px 24px 100px;
-  background: var(--pistachio);
+  background: var(--gold);
   color: var(--coffee);
 }
 .footerTop {
@@ -759,7 +761,8 @@
   max-width: 1300px;
   margin: 20px auto 0;
   font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(95px, 24.5vw, 345px);
+  font-size: clamp(72px, 20vw, 285px);
+  font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.075em;
   text-align: center;
@@ -776,7 +779,7 @@
 .footerBottom {
   max-width: 1280px;
   margin: auto;
-  border-top: 1px solid #28201c40;
+  border-top: 1px solid #17141140;
   padding-top: 18px;
   display: flex;
   flex-wrap: wrap;
@@ -806,7 +809,7 @@
   bottom: max(12px, env(safe-area-inset-bottom));
   border: 1px solid #f5eddf38;
   border-radius: 40px;
-  background: #29201cf5;
+  background: #24201bf5;
   color: var(--milk);
   backdrop-filter: blur(16px);
   box-shadow: 0 7px 24px #160e0a35;
@@ -826,7 +829,7 @@
   border-radius: 30px;
 }
 .mobileDock a:first-child {
-  background: var(--pistachio);
+  background: var(--gold);
   color: var(--coffee);
 }
 .navDialog,
@@ -875,7 +878,7 @@
   border-bottom: 1px solid #f5eddf25;
 }
 .navDialogInner > p {
-  color: var(--pistachio);
+  color: var(--gold);
   font-family: var(--font-script), cursive;
   font-size: 30px;
   margin-top: 25px;
@@ -923,10 +926,10 @@
 }
 .page :global(.dialog-product) {
   border-radius: 5px;
-  background: #352a23;
+  background: var(--brand-surface);
 }
 .page :global(.button) {
-  background: var(--pistachio);
+  background: var(--gold);
   color: var(--coffee);
 }
 .page :global(.menu-search input) {
@@ -1013,13 +1016,13 @@
     right: 0;
     bottom: 5px;
     height: 1px;
-    background: var(--pistachio);
+    background: var(--gold);
     transform: scaleX(0);
     transition: transform 220ms var(--ease-out);
     transform-origin: left;
   }
   .navLinks a:first-child {
-    color: var(--pistachio);
+    color: var(--gold);
   }
   .headerActions .headerVisit {
     display: inline-flex;
@@ -1204,9 +1207,9 @@
   .pairingShade {
     background: linear-gradient(
       90deg,
-      #211a1710 15%,
-      #211a1740 40%,
-      #211a17db 100%
+      #100e0c10 15%,
+      #100e0c40 40%,
+      #100e0cdb 100%
     );
   }
   .pairingCopy {
@@ -1270,7 +1273,7 @@
   }
   .footerWordmark {
     margin-top: 0;
-    font-size: min(25vw, 350px);
+    font-size: min(20vw, 285px);
     line-height: 1.1;
   }
   .footerBottom {
@@ -1365,7 +1368,7 @@
 }
 @media (hover: hover) and (pointer: fine) {
   .button:hover {
-    background: #d6e1bc;
+    background: var(--brand-gold-light);
     transform: translateY(-2px);
   }
   .button:hover svg {
@@ -1379,10 +1382,10 @@
   }
   .locationLink:hover,
   .textButton:hover {
-    color: var(--pistachio);
+    color: var(--gold);
   }
   .menuSection .textButton:hover {
-    color: #687349;
+    color: var(--brand-gold-deep);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1466,7 +1469,7 @@
   align-items: center;
   gap: 6px;
   min-height: 44px;
-  color: var(--pistachio);
+  color: var(--gold);
   font-weight: 600;
 }
 .footerConnect {
@@ -1484,7 +1487,7 @@
   gap: 9px;
   min-height: 44px;
   padding: 8px 16px;
-  border: 1px solid #28201c40;
+  border: 1px solid #17141140;
   border-radius: 100px;
   font-size: 11px;
   font-weight: 600;
@@ -1529,7 +1532,7 @@
 }
 .hoursDetails summary > svg:first-child {
   flex-shrink: 0;
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .hoursSummary {
   display: grid;
@@ -1545,7 +1548,7 @@
   font-weight: 600;
 }
 .openNow {
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .closedNow {
   color: #f0a28e;
@@ -1600,7 +1603,7 @@
   padding: 34px 22px 80px;
 }
 .offers .eyebrow {
-  color: #626f47;
+  color: var(--brand-gold-deep);
 }
 .offerList {
   display: grid;
@@ -1647,7 +1650,7 @@
   right: 22px;
   padding: 6px 12px;
   border-radius: 100px;
-  background: var(--pistachio);
+  background: var(--gold);
   color: var(--coffee-dark);
   font-size: 13px;
   font-weight: 800;
@@ -1667,7 +1670,7 @@
   font-weight: 600;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--pistachio);
+  color: var(--gold);
 }
 .offerPrice {
   display: flex;

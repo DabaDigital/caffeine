@@ -152,3 +152,14 @@ connected: the order button clearly explains that orders are placed in the café
 
 Native dialogs support Escape, focus containment and focus restoration. The page
 remains readable with JavaScript disabled; motion never gates the initial HTML.
+# Google Maps reviews
+
+Set `GOOGLE_PLACES_API_KEY` and `GOOGLE_PLACE_ID` in `.env.local` and in the hosting environment. The key stays on the server; restrict it to Places API (New) and rotate exposed keys. Restart the development server after changing these variables.
+
+The reviews section requests live Google data through `/api/google-reviews`. Requests are not persistently cached or saved to Supabase. Each page visit can generate a billable Place Details request. Configure Google Cloud quotas for the expected traffic before deployment.
+
+Google may return the overall rating and count without review text. The section always retains the Supabase guest reviews and their separate guest-book summary. Google ratings and counts appear alongside them without combining totals or inventing a rating distribution. When Google returns written reviews, they appear in a separate attributed group, preserving relevance order and author/source links. API failures leave the guest reviews available.
+
+Before publishing, provide the public Terms of Use and Privacy Policy required by Google's Places API policies: https://developers.google.com/maps/documentation/places/web-service/policies.
+
+The live integration check is opt-in with `TEST_GOOGLE_PLACES_LIVE=1`; other Google review tests use mocked responses.
